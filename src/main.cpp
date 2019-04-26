@@ -6,14 +6,18 @@
 #include "Shader.hpp"
 #include "Mesh.hpp"
 
+// Process mouse input
+void processMouse(GLFWwindow* window, double& xpos, glm::mat4& model);
+
 // Keyboard input callback
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-// Whether to show the 3D view or not
-static bool show3D = false;
+// Mouse scroll callback
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-// Whether to rotate the object
-static bool rotate = true;
+static float fov = 45.0f;	// Field of view for projection matrix
+static bool show3D = false;	// Whether to show the 3D view or not
+static bool rotate = false;	// Whether to rotate the object
 
 int main()
 {
@@ -55,6 +59,7 @@ int main()
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback); // Keyboard events callback func
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// GLEW init
 	// glewExperimental = GL_TRUE;
@@ -94,7 +99,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = s*s;
+		float y = std::sin(s);
 		float z = 0.0;
 		vertices.push_back(x);
 		vertices.push_back(y);
@@ -139,13 +144,14 @@ int main()
 	Shader shader("../function-rotator/res/shaders/vertex.glsl", "../function-rotator/res/shaders/fragment.glsl");
 	shader.useProgram();
 
+	// View matrix creation
 	glm::mat4 view(1.0);
-	view = glm::translate(view, {0.0f, -4.0f, 0.0f});
-	view = glm::rotate(view, glm::radians(20.0f), {1.0f, 0.0f, 0.0f});
+	//view = glm::translate(view, {0.0f, -4.0f, 0.0f});
+	//view = glm::rotate(view, glm::radians(20.0f), {1.0f, 0.0f, 0.0f});
 	shader.setMat4(view, "view");
 
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(WIDTH) / HEIGHT, 0.1f, 50.0f);
-	shader.setMat4(projection, "projection");
+	// Variable used for model matrix rotation
+	double xpos = 0.0;
 
 	// Number of vertices that make up the initial curve
 	int vertexCount = static_cast<int>(vertices.size() / 3);
@@ -154,15 +160,25 @@ int main()
 		// Clear window
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Perspective matrix creation
+		//glm::mat4 projection = glm::perspective(glm::radians(fov), static_cast<float>(WIDTH) / HEIGHT, 0.1f, 50.0f);
+		glm::mat4 projection = glm::ortho(-1, 1, -1, 1);
+		shader.setMat4(projection, "projection");
+
+		// Move the model away from the camera
 		glm::mat4 model(1.0);
 		model = glm::translate(model, {0.0, 0.0, -10.0});
-		shader.setMat4(model, "model");
+		model = glm::rotate(model, glm::radians(static_cast<float>(xpos)), {0.0, 1.0, 0.0});
 
+		// If automatic rotation is enabled
 		if(rotate)
 		{
 			model = glm::rotate(model, glm::radians(25.0f * static_cast<float>(glfwGetTime())), {0.0, 1.0, 0.0});
 			shader.setMat4(model, "model");
 		}
+
+		processMouse(window, xpos, model); // Process mouse input
+		shader.setMat4(model, "model");	// Pass the rotated model to the shaders
 
 		// Draw the xAxis
 		shader.setVec3(1.0f, 0.0f, 0.0f, "col");
@@ -215,4 +231,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if(key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)
 		rotate = !rotate;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	// Decrease the fov if the user scrolls down
+	fov -= 2.0f * static_cast<float>(yoffset);
+}
+
+void processMouse(GLFWwindow* window, double& xpos, glm::mat4& model)
+{
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	{
+		double ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+	}
 }
