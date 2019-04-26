@@ -6,8 +6,11 @@
 #include "Shader.hpp"
 #include "Mesh.hpp"
 
+// Simplify a fraction to its simplest form
+glm::vec2 simplifyFraction(int numerator, int denominator);
+
 // Process mouse input
-void processMouse(GLFWwindow* window, double& xpos, glm::mat4& model);
+void processMouse(GLFWwindow* window, double& xpos);
 
 // Keyboard input callback
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -24,6 +27,7 @@ int main()
 	// Constants
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
+	const glm::vec2 ASPECT = simplifyFraction(WIDTH, HEIGHT);
 
 	// Bounds of function
 	float a, b;
@@ -75,7 +79,7 @@ int main()
 	std::vector<float> xAxisV;
 	std::vector<float> yAxisV;
 	std::vector<float> zAxisV;
-	for(float s = -5.0f; s <= 5.0f; s += 1.0f)
+	for(float s = -6; s <= 6; s += 1.0f)
 	{
 		xAxisV.push_back(s);
 		xAxisV.push_back(0.0f);
@@ -146,8 +150,8 @@ int main()
 
 	// View matrix creation
 	glm::mat4 view(1.0);
-	//view = glm::translate(view, {0.0f, -4.0f, 0.0f});
-	//view = glm::rotate(view, glm::radians(20.0f), {1.0f, 0.0f, 0.0f});
+	view = glm::translate(view, {0.0f, -4.0f, 0.0f});
+	view = glm::rotate(view, glm::radians(20.0f), {1.0f, 0.0f, 0.0f});
 	shader.setMat4(view, "view");
 
 	// Variable used for model matrix rotation
@@ -161,8 +165,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Perspective matrix creation
-		//glm::mat4 projection = glm::perspective(glm::radians(fov), static_cast<float>(WIDTH) / HEIGHT, 0.1f, 50.0f);
-		glm::mat4 projection = glm::ortho(-1, 1, -1, 1);
+		glm::mat4 projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
 		shader.setMat4(projection, "projection");
 
 		// Move the model away from the camera
@@ -177,7 +180,7 @@ int main()
 			shader.setMat4(model, "model");
 		}
 
-		processMouse(window, xpos, model); // Process mouse input
+		processMouse(window, xpos); // Process mouse input
 		shader.setMat4(model, "model");	// Pass the rotated model to the shaders
 
 		// Draw the xAxis
@@ -224,6 +227,23 @@ int main()
 	return 0;
 }
 
+glm::vec2 simplifyFraction(int numerator, int denominator)
+{
+	int a = numerator;
+	int b = denominator;
+	while(b != 0)
+	{
+		int t = b;
+		b = a % b;
+		a = t;
+	}
+
+	numerator /= a;
+	denominator /= a;
+
+	return glm::vec2(numerator, denominator);
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
@@ -239,7 +259,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	fov -= 2.0f * static_cast<float>(yoffset);
 }
 
-void processMouse(GLFWwindow* window, double& xpos, glm::mat4& model)
+void processMouse(GLFWwindow* window, double& xpos)
 {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 	{
