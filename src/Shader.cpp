@@ -56,13 +56,13 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 		glGetShaderInfoLog(fragment, 1024, &log_length, message);
 		std::cout << message << std::endl;
     }
-    
+
 	// Shader program creation
     ID = glCreateProgram();
     glAttachShader(ID, vertex);
     glAttachShader(ID, fragment);
     glLinkProgram(ID);
-	
+
 	// Clean up
 	glDetachShader(ID, vertex);
 	glDetachShader(ID, fragment);
@@ -96,4 +96,10 @@ void Shader::setMat4(const glm::mat4& value, const char* location)
 {
 	int loc = glGetUniformLocation(ID, location);
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void Shader::setVec3(float x, float y, float z, const char* location)
+{
+	int loc = glGetUniformLocation(ID, location);
+	glUniform3f(loc, x, y, z);
 }

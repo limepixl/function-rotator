@@ -13,7 +13,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 static bool show3D = false;
 
 // Whether to rotate the object
-static bool rotate = false;
+static bool rotate = true;
 
 int main()
 {
@@ -66,13 +66,35 @@ int main()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	// Window background color
 	glEnable(GL_DEPTH_TEST);
 
+	// Generate the lines for the axes
+	std::vector<float> xAxisV;
+	std::vector<float> yAxisV;
+	std::vector<float> zAxisV;
+	for(float s = -5.0f; s <= 5.0f; s += 1.0f)
+	{
+		xAxisV.push_back(s);
+		xAxisV.push_back(0.0f);
+		xAxisV.push_back(0.0f);
+
+		yAxisV.push_back(0.0f);
+		yAxisV.push_back(s);
+		yAxisV.push_back(0.0f);
+
+		zAxisV.push_back(0.0f);
+		zAxisV.push_back(0.0f);
+		zAxisV.push_back(s);
+	}
+	Mesh xAxis(xAxisV);
+	Mesh yAxis(yAxisV);
+	Mesh zAxis(zAxisV);
+
 	// Generate the function's curve as plotted on a 2D xy plane
 	std::vector<float> vertices;
 	for(float s = a; s<=b; s+=incrementSize)
 	{
 		// Insert function here
 		float x = s;
-		float y = std::sin(std::cos(s));
+		float y = s*s;
 		float z = 0.0;
 		vertices.push_back(x);
 		vertices.push_back(y);
@@ -118,6 +140,8 @@ int main()
 	shader.useProgram();
 
 	glm::mat4 view(1.0);
+	view = glm::translate(view, {0.0f, -4.0f, 0.0f});
+	view = glm::rotate(view, glm::radians(20.0f), {1.0f, 0.0f, 0.0f});
 	shader.setMat4(view, "view");
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(WIDTH) / HEIGHT, 0.1f, 50.0f);
@@ -139,6 +163,27 @@ int main()
 			model = glm::rotate(model, glm::radians(25.0f * static_cast<float>(glfwGetTime())), {0.0, 1.0, 0.0});
 			shader.setMat4(model, "model");
 		}
+
+		// Draw the xAxis
+		shader.setVec3(1.0f, 0.0f, 0.0f, "col");
+		xAxis.bind();
+		glDrawArrays(GL_LINE_STRIP, 0, xAxis.vertexCount);
+		xAxis.unbind();
+
+		// Draw the yAxis
+		shader.setVec3(0.0f, 0.0f, 1.0f, "col");
+		yAxis.bind();
+		glDrawArrays(GL_LINE_STRIP, 0, yAxis.vertexCount);
+		yAxis.unbind();
+
+		// Draw the zAxis
+		shader.setVec3(0.0f, 1.0f, 0.0f, "col");
+		zAxis.bind();
+		glDrawArrays(GL_LINE_STRIP, 0, zAxis.vertexCount);
+		zAxis.unbind();
+
+		// Set the shape/line color
+		shader.setVec3(0.1f, 0.1f, 0.1f, "col");
 
 		// Draw the 3D generated shape
 		if(show3D)
