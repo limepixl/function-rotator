@@ -20,7 +20,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 static float fov = 45.0f;	// Field of view for projection matrix
 static bool show3D = false;	// Whether to show the 3D view or not
-static bool rotate = false;	// Whether to rotate the object
+static bool rotate = true;	// Whether to rotate the object
 
 int main()
 {
@@ -79,7 +79,7 @@ int main()
 	std::vector<float> xAxisV;
 	std::vector<float> yAxisV;
 	std::vector<float> zAxisV;
-	for(float s = -6; s <= 6; s += 1.0f)
+	for(float s = -10.0f; s <= 10.0f; s += 2.0f)
 	{
 		xAxisV.push_back(s);
 		xAxisV.push_back(0.0f);
@@ -103,7 +103,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = std::sin(s);
+		float y = std::min(s*s - 2, -s*s + 2);
 		float z = 0.0;
 		vertices.push_back(x);
 		vertices.push_back(y);
@@ -263,6 +263,9 @@ void processMouse(GLFWwindow* window, double& xpos)
 {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 	{
+		if(rotate)
+			rotate = !rotate;
+
 		double ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 	}

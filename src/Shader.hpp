@@ -3,12 +3,12 @@
 
 struct Shader
 {
-    unsigned int ID;
+	unsigned int ID;
 
-    Shader(const char* vertexPath, const char* fragmentPath);
+	Shader(const char* vertexPath, const char* fragmentPath);
 
-    void useProgram();
-    void stopUsingProgram();
+	void useProgram();
+	void stopUsingProgram();
 
 	void setInt(int value, const char* location);
 	void setFloat(float value, const char* location);
