@@ -18,9 +18,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // Mouse scroll callback
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-static float fov = 45.0f;	// Field of view for projection matrix
-static bool show3D = false;	// Whether to show the 3D view or not
-static bool rotate = true;	// Whether to rotate the object
+static bool perspective = true;	// Whether to show the perspective matrix at start
+static float fov = 45.0f;		// Field of view for projection matrix
+static bool show3D = false;		// Whether to show the 3D view or not
+static bool rotate = true;		// Whether to rotate the object
+static float multiplier = 0.4f;	// Amount which the margins of the ortho
+								// matrix will be divided by (for zoom effect)
 
 int main()
 {
@@ -109,7 +112,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = s*s;
+		float y = s*s*s;
 		float z = 0.0;
 		vertices.push_back(x);
 		vertices.push_back(y);
@@ -175,9 +178,17 @@ int main()
 		// Clear window
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Perspective matrix creation
-		glm::mat4 projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
-		shader.setMat4(projection, "projection");
+		if(perspective)
+		{
+			// Perspective projection matrix creation
+			glm::mat4 projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
+			shader.setMat4(projection, "projection");
+		} else
+		{
+			// Orthographic projection matrix creation
+			glm::mat4 projection = glm::ortho(-ASPECT.x * multiplier, ASPECT.x * multiplier, -ASPECT.y * multiplier, ASPECT.y * multiplier, 0.01f, 50.0f);
+			shader.setMat4(projection, "projection");
+		}
 
 		// Move the model away from the camera
 		glm::mat4 model(1.0);
@@ -260,14 +271,37 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if(key == GLFW_KEY_SPACE && action == GLFW_PRESS)
 		show3D = !show3D;
 
-	if(key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)
+	if(key == GLFW_KEY_R && action == GLFW_PRESS)
 		rotate = !rotate;
+
+	if(key == GLFW_KEY_P && action == GLFW_PRESS)
+	{
+		perspective = !perspective;
+
+		// Reset default values
+		fov = 45.0f;
+		multiplier = 0.4f;
+	}
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	// Decrease the fov if the user scrolls down
-	fov -= 2.0f * static_cast<float>(yoffset);
+	if(perspective)
+	{
+		// Decrease the fov if the user scrolls down
+		fov -= 2.0f * static_cast<float>(yoffset);
+
+		// If the value is too low
+		if(fov < 10.0f)
+			fov = 10.0f;
+	} else
+	{
+		multiplier -= 0.05f * static_cast<float>(yoffset);
+
+		// If the value is too low
+		if(multiplier < 0.1f)
+			multiplier = 0.1f;
+	}
 }
 
 void processMouse(GLFWwindow* window, double& xpos)
