@@ -44,6 +44,12 @@ int main()
 	std::cout << "(0 for default, 0.05) ";
 	std::cin >> incrementSize;
 
+	// Choice of axis of rotation
+	char axis;
+	std::cout << "Enter the axis of rotation: " << std::endl;
+	std::cout << "(X, Y or Z) ";
+	std::cin >> axis;
+
 	if(incrementSize <= 0.0f)
 		incrementSize = 0.05f;
 
@@ -103,7 +109,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = std::min(s*s - 2, -s*s + 2);
+		float y = s*s;
 		float z = 0.0;
 		vertices.push_back(x);
 		vertices.push_back(y);
@@ -132,8 +138,13 @@ int main()
 		{
 			glm::mat4 rotator(1.0);
 
-			// Store a rotation along the x axis, by mul*j degrees in the matrix
-			rotator = glm::rotate(rotator, glm::radians(mul * j), {1.0, 0.0, 0.0});
+			// Store a rotation along the desired axis, by mul*j degrees in the matrix
+			if(axis == 'x' || axis == 'X')
+				rotator = glm::rotate(rotator, glm::radians(mul * j), {1.0, 0.0, 0.0});
+			else if(axis == 'y' || axis == 'Y')
+				rotator = glm::rotate(rotator, glm::radians(mul * j), {0.0, 1.0, 0.0});
+			else
+				rotator = glm::rotate(rotator, glm::radians(mul * j), {0.0, 0.0, 1.0});
 
 			// Rotated vertex
 			glm::vec3 rotated = rotator * glm::vec4(current.x, current.y, current.z, 1.0);
