@@ -2,8 +2,9 @@
 A program that visualizes a given function in 2D and has the ability to rotate it along an axis, to generate a 3D mesh.
 
 ### Controls
-- **Space** - Toggle on/off the mesh view
-- **Left Shift** - Toggle automatic rotation
+- **Space** - Toggle the mesh view
+- **R** - Toggle automatic rotation
+- **P** - Toggle projection mode (perspective vs orthographic) 
 - **Left Mouse Button** - Click and drag to rotate manually
 - **Scroll Wheel** - Zoom in and out
 
