@@ -1,5 +1,5 @@
 #include <iostream>
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -74,11 +74,11 @@ int main()
 	glfwSetKeyCallback(window, key_callback); // Keyboard events callback func
 	glfwSetScrollCallback(window, scroll_callback);
 
-	// GLEW init
-	// glewExperimental = GL_TRUE;
-	if(glewInit() != GLEW_OK)
+	// GLAD init
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLEW" << std::endl;
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
 	}
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	// Window background color

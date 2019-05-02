@@ -15,7 +15,7 @@ A program that visualizes a given function in 2D and has the ability to rotate i
 
 ### Images
 ![sin(x)](https://github.com/limepixl/function-rotator/blob/master/img/sinx.png)
-![x*x*x](https://github.com/limepixl/function-rotator/blob/master/img/x*x*x.png)
+![x*x*x](https://github.com/limepixl/function-rotator/blob/master/img/xxx.png)
 
 ### Todo
 * Indexed rendering for 3D mesh

@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
