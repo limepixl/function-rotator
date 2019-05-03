@@ -58,12 +58,6 @@ int main()
 	std::cout << "(0 for default, 100) ";
 	std::cin >> iterations;
 
-	// Choice of axis of rotation
-	char axis;
-	std::cout << "Enter the axis of rotation: " << std::endl;
-	std::cout << "(X, Y or Z) ";
-	std::cin >> axis;
-
 	// Default values
 	if(incrementSize <= 0.0f)
 		incrementSize = 0.05f;
@@ -153,16 +147,11 @@ int main()
 		{
 			glm::mat4 rotator(1.0);
 
-			// Store a rotation along the desired axis, by mul*j degrees in the matrix
-			if(axis == 'x' || axis == 'X')
-				rotator = glm::rotate(rotator, glm::radians(mul * j), {1.0, 0.0, 0.0});
-			else if(axis == 'y' || axis == 'Y')
-				rotator = glm::rotate(rotator, glm::radians(mul * j), {0.0, 1.0, 0.0});
-			else
-				rotator = glm::rotate(rotator, glm::radians(mul * j), {0.0, 0.0, 1.0});
+			// Rotate along the X axis
+			rotator = glm::rotate(rotator, glm::radians(mul * j), {1.0, 0.0, 0.0});
 
 			// Rotated vertex
-			glm::vec3 rotatedCurrent = rotator * glm::vec4(current.x, current.y, current.z, 1.0);
+			glm::vec4 rotatedCurrent = rotator * glm::vec4(current.x, current.y, current.z, 1.0);
 
 			vertices3D.push_back(rotatedCurrent.x);
 			vertices3D.push_back(rotatedCurrent.y);
@@ -171,7 +160,7 @@ int main()
 	}
 
 	// This is the number of actual vertices, - the number of rotations
-	// for each vertex. 
+	// for each vertex. It's basically the number of faces.
 	size_t numIterations = vertices3D.size() / 3 - iterations - 1;
 
 	// Value to track which index the for loop has landed on.
@@ -184,6 +173,7 @@ int main()
 		// ...
 		// 3 2 7 6 ...
 		// 0 1 4 5 ...
+
 		indices.push_back(index);
 		indices.push_back(index + 1);
 		indices.push_back(index + iterations + 1);
@@ -197,12 +187,6 @@ int main()
 
 	Shader shader("../function-rotator/res/shaders/vertex.glsl", "../function-rotator/res/shaders/fragment.glsl");
 	shader.useProgram();
-
-	// View matrix creation
-	glm::mat4 view(1.0);
-	view = glm::translate(view, {0.0f, -4.0f, 0.0f});
-	view = glm::rotate(view, glm::radians(20.0f), {1.0f, 0.0f, 0.0f});
-	shader.setMat4(view, "view");
 
 	// Variable used for model matrix rotation
 	double xpos = 0.0;
@@ -227,20 +211,26 @@ int main()
 			shader.setMat4(projection, "projection");
 		}
 
-		// Move the model away from the camera
+		// Model matrix creation
 		glm::mat4 model(1.0);
-		model = glm::translate(model, {0.0, 0.0, -10.0});
-		model = glm::rotate(model, glm::radians(static_cast<float>(xpos)), {0.0, 1.0, 0.0});
+		shader.setMat4(model, "model");
+
+		// View matrix creation
+		glm::mat4 view(1.0);
+		view = glm::translate(view, { 0.0f, -0.5f, 0.0f });	// Move the camera above mesh
+		view = glm::translate(view, {0.0, 0.0, -10.0}); // Move camera away from the mesh
+		view = glm::rotate(view, glm::radians(20.0f), { 1.0f, 0.0f, 0.0f }); // Tilt the camera downwards
+		view = glm::rotate(view, glm::radians(static_cast<float>(xpos)), { 0.0, 1.0, 0.0 }); // Adjust position based on mouse
 
 		// If automatic rotation is enabled
 		if(rotate)
 		{
-			model = glm::rotate(model, glm::radians(25.0f * static_cast<float>(glfwGetTime())), {0.0, 1.0, 0.0});
-			shader.setMat4(model, "model");
+			view = glm::rotate(view, glm::radians(25.0f * static_cast<float>(glfwGetTime())), {0.0, 1.0, 0.0});
+			shader.setMat4(view, "view");
 		}
 
-		processMouse(window, xpos); // Process mouse input
-		shader.setMat4(model, "model");	// Pass the rotated model to the shaders
+		processMouse(window, xpos);		// Process mouse input
+		shader.setMat4(view, "view");	// Pass the rotated model to the shaders
 
 		// Draw the xAxis
 		shader.setVec3(1.0f, 0.0f, 0.0f, "col");
@@ -267,7 +257,6 @@ int main()
 		if(show3D)
 		{
 			shape.bind();
-			
 			glDrawElements(GL_TRIANGLES, shape.vertexCount, GL_UNSIGNED_INT, nullptr);
 			shape.unbind();
 		}

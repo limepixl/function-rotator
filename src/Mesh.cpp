@@ -6,8 +6,9 @@ Mesh::~Mesh()
 	glDeleteVertexArrays(1, &VAO);
 }
 
-Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned int>& indices)
+Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned int>& indices, const std::vector<float>& normals)
 {
+	// Check if indices have been given
 	if(!indices.empty())
 	{
 		vertexCount = static_cast<int>(indices.size());
@@ -18,6 +19,12 @@ Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned
 		vertexCount = static_cast<int>(vertexPositions.size() / 3);		
 		hasIndices = false;
 	}
+
+	// Check if normals have been given
+	if(!normals.empty())
+		hasNormals = true;
+	else
+		hasNormals = false;
 	
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -30,9 +37,22 @@ Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
+
+	if(hasNormals)
+	{
+		// Passing normals
+		unsigned int nVBO;
+		glGenBuffers(1, &nVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, nVBO);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+		glEnableVertexAttribArray(1);
+	}
 	
 	if(hasIndices)
 	{
+		// Creating EBO for indexed rendering using indices
 		glGenBuffers(1, &EBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned	int), indices.data(), GL_STATIC_DRAW);
