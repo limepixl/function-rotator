@@ -18,6 +18,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // Mouse scroll callback
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+// Window resize callback
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
 static bool perspective = true;	// Whether to show the perspective matrix at start
 static float fov = 45.0f;		// Field of view for projection matrix
 static bool show3D = false;		// Whether to show the 3D view or not
@@ -73,6 +76,8 @@ int main()
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback); // Keyboard events callback func
 	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSwapInterval(1);
 
 	// GLAD init
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -302,6 +307,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 		if(multiplier < 0.1f)
 			multiplier = 0.1f;
 	}
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
 }
 
 void processMouse(GLFWwindow* window, double& xpos)
