@@ -122,7 +122,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = s*s*s;
+		float y = std::sin(s);
 		float z = 0.0;
 		vertices.push_back(x);
 		vertices.push_back(y);
@@ -183,10 +183,44 @@ int main()
 
 		index++;
 	}
-	Mesh shape(vertices3D, indices);
 
-	Shader shader("../function-rotator/res/shaders/vertex.glsl", "../function-rotator/res/shaders/fragment.glsl");
-	shader.useProgram();
+	// Calculate normal vectors
+	std::vector<float> normals;
+	for(size_t i = 0; i < vertices3D.size() - iterations - 3; i+=3)
+	{
+		// The first of 2 triangles in each face
+		// c
+		// |\
+		// | \
+		// |  \
+		// a---b
+
+		glm::vec3 a{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
+		glm::vec3 b{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
+		glm::vec3 c{ vertices3D[i + iterations], vertices3D[i + 1 + iterations], vertices3D[i + 2 + iterations] };
+
+		// For the triangle ABC
+		glm::vec3 u = b - a;
+		glm::vec3 v = c - a;
+
+		glm::vec3 normal;
+
+		if(i < (vertices3D.size() - iterations - 3) / 2)
+			normal = glm::cross(u, v);
+		else
+			normal = glm::cross(v, u);
+
+		// Normalize vector
+		normal = glm::normalize(normal);
+
+		normals.push_back(normal.x);
+		normals.push_back(normal.y);
+		normals.push_back(normal.z);
+	}
+	Mesh shape(vertices3D, indices, normals);
+
+	Shader shader("./res/shaders/vertex.glsl", "./res/shaders/fragment.glsl");
+	Shader defaultShader("./res/shaders/vDefault.glsl", "./res/shaders/fDefault.glsl");
 
 	// Variable used for model matrix rotation
 	double xpos = 0.0;
@@ -199,21 +233,25 @@ int main()
 		// Clear window
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Setup full color shader
+		defaultShader.useProgram();
+
+		glm::mat4 projection;
 		if(perspective)
 		{
 			// Perspective projection matrix creation
-			glm::mat4 projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
-			shader.setMat4(projection, "projection");
+			projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
+			defaultShader.setMat4(projection, "projection");
 		} else
 		{
 			// Orthographic projection matrix creation
-			glm::mat4 projection = glm::ortho(-ASPECT.x * multiplier, ASPECT.x * multiplier, -ASPECT.y * multiplier, ASPECT.y * multiplier, 0.01f, 50.0f);
-			shader.setMat4(projection, "projection");
+			projection = glm::ortho(-ASPECT.x * multiplier, ASPECT.x * multiplier, -ASPECT.y * multiplier, ASPECT.y * multiplier, 0.01f, 50.0f);
+			defaultShader.setMat4(projection, "projection");
 		}
 
 		// Model matrix creation
 		glm::mat4 model(1.0);
-		shader.setMat4(model, "model");
+		defaultShader.setMat4(model, "model");
 
 		// View matrix creation
 		glm::mat4 view(1.0);
@@ -226,32 +264,38 @@ int main()
 		if(rotate)
 		{
 			view = glm::rotate(view, glm::radians(25.0f * static_cast<float>(glfwGetTime())), {0.0, 1.0, 0.0});
-			shader.setMat4(view, "view");
+			defaultShader.setMat4(view, "view");
 		}
 
 		processMouse(window, xpos);		// Process mouse input
-		shader.setMat4(view, "view");	// Pass the rotated model to the shaders
+		defaultShader.setMat4(view, "view");	// Pass the rotated model to the shaders
 
 		// Draw the xAxis
-		shader.setVec3(1.0f, 0.0f, 0.0f, "col");
+		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
 		xAxis.bind();
 		glDrawArrays(GL_LINE_STRIP, 0, xAxis.vertexCount);
 		xAxis.unbind();
 
 		// Draw the yAxis
-		shader.setVec3(0.0f, 0.0f, 1.0f, "col");
+		defaultShader.setVec3(0.0f, 0.0f, 1.0f, "col");
 		yAxis.bind();
 		glDrawArrays(GL_LINE_STRIP, 0, yAxis.vertexCount);
 		yAxis.unbind();
 
 		// Draw the zAxis
-		shader.setVec3(0.0f, 1.0f, 0.0f, "col");
+		defaultShader.setVec3(0.0f, 1.0f, 0.0f, "col");
 		zAxis.bind();
 		glDrawArrays(GL_LINE_STRIP, 0, zAxis.vertexCount);
 		zAxis.unbind();
 
-		// Set the shape/line color
+		// Switch to mesh shader
+		shader.useProgram();
+
+		// Set all uniforms for mesh
 		shader.setVec3(0.1f, 0.1f, 0.1f, "col");
+		shader.setMat4(model, "model");
+		shader.setMat4(view, "view");
+		shader.setMat4(projection, "projection");
 
 		// Draw the 3D generated shape
 		if(show3D)
