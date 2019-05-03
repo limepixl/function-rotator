@@ -21,6 +21,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // Window resize callback
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
+static bool wireframe = true;	// Whether to show the mesh as a wireframe mesh
 static bool perspective = true;	// Whether to show the perspective matrix at start
 static float fov = 45.0f;		// Field of view for projection matrix
 static bool show3D = false;		// Whether to show the 3D view or not
@@ -50,14 +51,24 @@ int main()
 	std::cout << "(0 for default, 0.05) ";
 	std::cin >> incrementSize;
 
+	// The number of times the points will be rotated
+	// AKA the number of points in each circle at each x value.
+	int iterations;
+	std::cout << "Enter the desired number of rotations for each vertex: " << std::endl;
+	std::cout << "(0 for default, 100) ";
+	std::cin >> iterations;
+
 	// Choice of axis of rotation
 	char axis;
 	std::cout << "Enter the axis of rotation: " << std::endl;
 	std::cout << "(X, Y or Z) ";
 	std::cin >> axis;
 
+	// Default values
 	if(incrementSize <= 0.0f)
 		incrementSize = 0.05f;
+	if(iterations == 0)
+		iterations = 100;
 
 	// GLFW initialization
 	glfwInit();
@@ -125,10 +136,6 @@ int main()
 	}
 	Mesh curve(vertices);
 
-	// The number of times the points will be rotated
-	// AKA the number of points in each circle at each x value.
-	int iterations = 100;
-
 	// Increment size to rotate by (in degrees)
 	// to reach 360 degrees with the number of
 	// set iterations.
@@ -139,7 +146,7 @@ int main()
 	std::vector<float> vertices3D;
 	for(size_t i = 0; i < vertices.size(); i+=3)
 	{
-		glm::vec3 current(vertices[i], vertices[i+1], vertices[i+2]);
+		glm::vec3 current(vertices[i], vertices[i + 1], vertices[i + 2]);
 
 		// There are 360 vertices in each row
 		for(int j = 0; j <= iterations; j++)
@@ -155,14 +162,38 @@ int main()
 				rotator = glm::rotate(rotator, glm::radians(mul * j), {0.0, 0.0, 1.0});
 
 			// Rotated vertex
-			glm::vec3 rotated = rotator * glm::vec4(current.x, current.y, current.z, 1.0);
+			glm::vec3 rotatedCurrent = rotator * glm::vec4(current.x, current.y, current.z, 1.0);
 
-			vertices3D.push_back(rotated.x);
-			vertices3D.push_back(rotated.y);
-			vertices3D.push_back(rotated.z);
+			vertices3D.push_back(rotatedCurrent.x);
+			vertices3D.push_back(rotatedCurrent.y);
+			vertices3D.push_back(rotatedCurrent.z);
 		}
 	}
-	Mesh shape(vertices3D);
+
+	// This is the number of actual vertices, - the number of rotations
+	// for each vertex. 
+	size_t numIterations = vertices3D.size() / 3 - iterations - 1;
+
+	// Value to track which index the for loop has landed on.
+	unsigned int index = 0;
+
+	// Store indices
+	std::vector<unsigned int> indices;
+	for(int i = 0; i < numIterations; i++)
+	{
+		// ...
+		// 3 2 7 6 ...
+		// 0 1 4 5 ...
+		indices.push_back(index);
+		indices.push_back(index + 1);
+		indices.push_back(index + iterations + 1);
+		indices.push_back(index + iterations + 1);
+		indices.push_back(index + iterations);
+		indices.push_back(index);
+
+		index++;
+	}
+	Mesh shape(vertices3D, indices);
 
 	Shader shader("../function-rotator/res/shaders/vertex.glsl", "../function-rotator/res/shaders/fragment.glsl");
 	shader.useProgram();
@@ -178,6 +209,7 @@ int main()
 
 	// Number of vertices that make up the initial curve
 	int vertexCount = static_cast<int>(vertices.size() / 3);
+
 	while(!glfwWindowShouldClose(window))
 	{
 		// Clear window
@@ -235,7 +267,8 @@ int main()
 		if(show3D)
 		{
 			shape.bind();
-			glDrawArrays(GL_LINE_STRIP, 0, shape.vertexCount);
+			
+			glDrawElements(GL_TRIANGLES, shape.vertexCount, GL_UNSIGNED_INT, nullptr);
 			shape.unbind();
 		}
 		else // Draw the 2D curve
@@ -287,6 +320,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		fov = 45.0f;
 		multiplier = 0.4f;
 	}
+
+	if(key == GLFW_KEY_M && action == GLFW_PRESS)
+	{
+		if(wireframe)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			wireframe = false;
+		} else
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			wireframe = true;
+		}
+	}
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -316,7 +362,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processMouse(GLFWwindow* window, double& xpos)
 {
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 	{
 		if(rotate)
 			rotate = !rotate;
