@@ -21,6 +21,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // Window resize callback
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
+static bool lighting = false;	// Whether to show the lighting
 static bool wireframe = true;	// Whether to show the mesh as a wireframe mesh
 static bool perspective = true;	// Whether to show the perspective matrix at start
 static float fov = 45.0f;		// Field of view for projection matrix
@@ -151,7 +152,7 @@ int main()
 			rotator = glm::rotate(rotator, glm::radians(mul * j), {1.0, 0.0, 0.0});
 
 			// Rotated vertex
-			glm::vec4 rotatedCurrent = rotator * glm::vec4(current.x, current.y, current.z, 1.0);
+			glm::vec4 rotatedCurrent = rotator * glm::vec4(current, 1.0);
 
 			vertices3D.push_back(rotatedCurrent.x);
 			vertices3D.push_back(rotatedCurrent.y);
@@ -186,7 +187,7 @@ int main()
 
 	// Calculate normal vectors
 	std::vector<float> normals;
-	for(size_t i = 0; i < vertices3D.size() - iterations - 3; i+=3)
+	for(size_t i = 0; i < vertices3D.size() - 3*iterations; i+=3)
 	{
 		// The first of 2 triangles in each face
 		// c
@@ -197,21 +198,13 @@ int main()
 
 		glm::vec3 a{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
 		glm::vec3 b{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
-		glm::vec3 c{ vertices3D[i + iterations], vertices3D[i + 1 + iterations], vertices3D[i + 2 + iterations] };
+		glm::vec3 c{ vertices3D[i + 3 * iterations], vertices3D[i + 1 + 3 * iterations], vertices3D[i + 2 + 3 * iterations] };
 
 		// For the triangle ABC
 		glm::vec3 u = b - a;
 		glm::vec3 v = c - a;
 
-		glm::vec3 normal;
-
-		if(i < (vertices3D.size() - iterations - 3) / 2)
-			normal = glm::cross(u, v);
-		else
-			normal = glm::cross(v, u);
-
-		// Normalize vector
-		normal = glm::normalize(normal);
+		glm::vec3 normal = glm::cross(u, v);
 
 		normals.push_back(normal.x);
 		normals.push_back(normal.y);
@@ -292,7 +285,15 @@ int main()
 		shader.useProgram();
 
 		// Set all uniforms for mesh
-		shader.setVec3(0.1f, 0.1f, 0.1f, "col");
+		if(lighting)
+		{
+			shader.setVec3(1.0f, 1.0f, 1.0f, "col");
+			shader.setVec3(0.0f, 50.0f, 0.0f, "lightPos");
+		} else
+		{
+			shader.setVec3(0.1f, 0.1f, 0.1f, "col");
+			shader.setVec3(0.0f, -500.0f, 0.0f, "lightPos");
+		}
 		shader.setMat4(model, "model");
 		shader.setMat4(view, "view");
 		shader.setMat4(projection, "projection");
@@ -344,6 +345,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if(key == GLFW_KEY_R && action == GLFW_PRESS)
 		rotate = !rotate;
+
+	if(key == GLFW_KEY_L && action == GLFW_PRESS)
+		lighting = !lighting;
 
 	if(key == GLFW_KEY_P && action == GLFW_PRESS)
 	{
