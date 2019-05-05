@@ -134,7 +134,7 @@ int main()
 		vertices.push_back(z);
 	}
 	Mesh curve(vertices);
-
+	
 	// Increment size to rotate by (in degrees),
 	// to reach 360 degrees with the number of
 	// set iterations.
@@ -207,19 +207,19 @@ int main()
 	for(size_t i = 0; i < vertices3D.size() - iterationsPerVertex; i+=3)
 	{
 		// The first of 2 triangles in each face
-		// c
+		// C
 		// |\
 		// | \
 		// |  \
-		// a---b
+		// A---B
 
-		glm::vec3 a{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
-		glm::vec3 b{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
-		glm::vec3 c{ vertices3D[i + iterationsPerVertex], vertices3D[i + 1 + iterationsPerVertex], vertices3D[i + 2 + iterationsPerVertex] };
+		glm::vec3 A { vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
+		glm::vec3 B { vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
+		glm::vec3 C { vertices3D[i + iterationsPerVertex], vertices3D[i + 1 + iterationsPerVertex], vertices3D[i + 2 + iterationsPerVertex] };
 
 		// For the triangle ABC
-		glm::vec3 u = b - a;
-		glm::vec3 v = c - a;
+		glm::vec3 u = B - A;
+		glm::vec3 v = C - A;
 
 		// The cross product is the vector that 
 		// has a direction normal to the uv plane.
