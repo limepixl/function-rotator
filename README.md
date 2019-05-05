@@ -21,5 +21,5 @@ A program that visualizes a given function in 2D and has the ability to rotate i
 
 ### Todo
 * ~~Indexed rendering for 3D mesh~~
-* Choice between axis of rotation
+* ~~Choice between axis of rotation~~
 * (Optional) Function parsing instead of hardcoded function

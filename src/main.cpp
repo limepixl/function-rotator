@@ -56,6 +56,12 @@ int main()
 	std::cout << "(0 for default, 100) ";
 	std::cin >> iterations;
 
+	// The desired axis of rotation
+	char axis;
+	std::cout << "Enter the desired axis of rotation: " << std::endl;
+	std::cout << "(X, Y or Z) ";
+	std::cin >> axis;
+
 	// Default values
 	if(incrementSize <= 0.0f)
 		incrementSize = 0.05f;
@@ -146,8 +152,20 @@ int main()
 		{
 			glm::mat4 rotator(1.0);
 
-			// Rotate along the X axis
-			rotator = glm::rotate(rotator, glm::radians(mul * j), {1.0, 0.0, 0.0});
+			if(axis == 'x' || axis == 'X')
+			{
+				// Rotate along the X axis
+				rotator = glm::rotate(rotator, glm::radians(mul * j), { 1.0, 0.0, 0.0 });
+			}
+			else if(axis == 'y' || axis == 'Y')
+			{
+				// Rotate along the Y axis
+				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 1.0, 0.0 });
+			} else
+			{
+				// Rotate along the Z axis
+				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 0.0, 1.0 });
+			}
 
 			// Rotated vertex
 			glm::vec4 rotatedCurrent = rotator * glm::vec4(current, 1.0);
