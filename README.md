@@ -6,7 +6,6 @@ A program that visualizes a given function in 2D and has the ability to rotate i
 - **R** - Toggle automatic rotation
 - **L** - Toggle lighting (experimental)
 - **M** - Toggle polygon mode / see all polygons drawn transparently
-- **P** - Toggle projection mode (perspective vs orthographic) 
 - **Left Mouse Button** - Click and drag to rotate manually
 - **Scroll Wheel** - Zoom in and out
 
@@ -21,6 +20,6 @@ A program that visualizes a given function in 2D and has the ability to rotate i
 ![3](https://github.com/limepixl/function-rotator/blob/master/img/3.png)
 
 ### Todo
-* Indexed rendering for 3D mesh
+* ~~Indexed rendering for 3D mesh~~
 * Choice between axis of rotation
 * (Optional) Function parsing instead of hardcoded function

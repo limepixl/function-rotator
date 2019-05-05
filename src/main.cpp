@@ -23,12 +23,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 static bool lighting = false;	// Whether to show the lighting
 static bool wireframe = true;	// Whether to show the mesh as a wireframe mesh
-static bool perspective = true;	// Whether to show the perspective matrix at start
 static float fov = 45.0f;		// Field of view for projection matrix
 static bool show3D = false;		// Whether to show the 3D view or not
 static bool rotate = true;		// Whether to rotate the object
-static float multiplier = 0.4f;	// Amount which the margins of the ortho
-								// matrix will be divided by (for zoom effect)
 
 int main()
 {
@@ -45,15 +42,15 @@ int main()
 	std::cout << "Enter a value to end at (b): ";
 	std::cin >> b;
 
-	// Increment size between 2 points on the curve,
-	// AKA distance. Affects concentric circle delta.
+	// Increment size between every 2 points on the curve.
+	// AKA the step size for each x.
 	float incrementSize;
 	std::cout << "Enter the increment size between any 2 X values: " << std::endl;
 	std::cout << "(0 for default, 0.05) ";
 	std::cin >> incrementSize;
 
-	// The number of times the points will be rotated
-	// AKA the number of points in each circle at each x value.
+	// The number of times the points will be rotated, and
+	// the number of points in each circle at each x value.
 	int iterations;
 	std::cout << "Enter the desired number of rotations for each vertex: " << std::endl;
 	std::cout << "(0 for default, 100) ";
@@ -80,10 +77,10 @@ int main()
 		glfwTerminate();
 	}
 	glfwMakeContextCurrent(window);
-	glfwSetKeyCallback(window, key_callback); // Keyboard events callback func
+	glfwSetKeyCallback(window, key_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSwapInterval(1);
+	glfwSwapInterval(1); // VSync
 
 	// GLAD init
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -123,27 +120,28 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = std::sin(s);
+		float y = std::sin(x);
 		float z = 0.0;
+
 		vertices.push_back(x);
 		vertices.push_back(y);
 		vertices.push_back(z);
 	}
 	Mesh curve(vertices);
 
-	// Increment size to rotate by (in degrees)
+	// Increment size to rotate by (in degrees),
 	// to reach 360 degrees with the number of
 	// set iterations.
 	float mul = static_cast<float>(360)/iterations;
 
 	// Generate rotated vertices along the circle
-	// defined by the vertex's y coord as the radius.
+	// defined by the function's value as the radius.
 	std::vector<float> vertices3D;
 	for(size_t i = 0; i < vertices.size(); i+=3)
 	{
 		glm::vec3 current(vertices[i], vertices[i + 1], vertices[i + 2]);
 
-		// There are 360 vertices in each row
+		// Complete a full circle 
 		for(int j = 0; j <= iterations; j++)
 		{
 			glm::mat4 rotator(1.0);
@@ -187,7 +185,8 @@ int main()
 
 	// Calculate normal vectors
 	std::vector<float> normals;
-	for(size_t i = 0; i < vertices3D.size() - 3*iterations; i+=3)
+	size_t iterationsPerVertex = static_cast<size_t>(3) * iterations;
+	for(size_t i = 0; i < vertices3D.size() - iterationsPerVertex; i+=3)
 	{
 		// The first of 2 triangles in each face
 		// c
@@ -198,12 +197,14 @@ int main()
 
 		glm::vec3 a{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
 		glm::vec3 b{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
-		glm::vec3 c{ vertices3D[i + 3 * iterations], vertices3D[i + 1 + 3 * iterations], vertices3D[i + 2 + 3 * iterations] };
+		glm::vec3 c{ vertices3D[i + iterationsPerVertex], vertices3D[i + 1 + iterationsPerVertex], vertices3D[i + 2 + iterationsPerVertex] };
 
 		// For the triangle ABC
 		glm::vec3 u = b - a;
 		glm::vec3 v = c - a;
 
+		// The cross product is the vector that 
+		// has a direction normal to the uv plane.
 		glm::vec3 normal = glm::cross(u, v);
 
 		normals.push_back(normal.x);
@@ -212,8 +213,8 @@ int main()
 	}
 	Mesh shape(vertices3D, indices, normals);
 
-	Shader shader("./res/shaders/vertex.glsl", "./res/shaders/fragment.glsl");
-	Shader defaultShader("./res/shaders/vDefault.glsl", "./res/shaders/fDefault.glsl");
+	Shader shader("./res/shaders/vertex.glsl", "./res/shaders/fragment.glsl");	// Used for function 2D and 3D mesh drawing
+	Shader defaultShader("./res/shaders/vDefault.glsl", "./res/shaders/fDefault.glsl");	// Used for axes mesh drawing
 
 	// Variable used for model matrix rotation
 	double xpos = 0.0;
@@ -226,21 +227,15 @@ int main()
 		// Clear window
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Process mouse input
+		processMouse(window, xpos);	
+
 		// Setup full color shader
 		defaultShader.useProgram();
 
-		glm::mat4 projection;
-		if(perspective)
-		{
-			// Perspective projection matrix creation
-			projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
-			defaultShader.setMat4(projection, "projection");
-		} else
-		{
-			// Orthographic projection matrix creation
-			projection = glm::ortho(-ASPECT.x * multiplier, ASPECT.x * multiplier, -ASPECT.y * multiplier, ASPECT.y * multiplier, 0.01f, 50.0f);
-			defaultShader.setMat4(projection, "projection");
-		}
+		// Perspective projection matrix creation
+		glm::mat4 projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
+		defaultShader.setMat4(projection, "projection");
 
 		// Model matrix creation
 		glm::mat4 model(1.0);
@@ -248,10 +243,10 @@ int main()
 
 		// View matrix creation
 		glm::mat4 view(1.0);
-		view = glm::translate(view, { 0.0f, -0.5f, 0.0f });	// Move the camera above mesh
-		view = glm::translate(view, {0.0, 0.0, -10.0}); // Move camera away from the mesh
+		view = glm::translate(view, { 0.0f, -0.5f, -10.0f });	// Move the camera above and away from the mesh
 		view = glm::rotate(view, glm::radians(20.0f), { 1.0f, 0.0f, 0.0f }); // Tilt the camera downwards
 		view = glm::rotate(view, glm::radians(static_cast<float>(xpos)), { 0.0, 1.0, 0.0 }); // Adjust position based on mouse
+		defaultShader.setMat4(view, "view");	// Pass the rotated view matrix to the shaders
 
 		// If automatic rotation is enabled
 		if(rotate)
@@ -259,9 +254,6 @@ int main()
 			view = glm::rotate(view, glm::radians(25.0f * static_cast<float>(glfwGetTime())), {0.0, 1.0, 0.0});
 			defaultShader.setMat4(view, "view");
 		}
-
-		processMouse(window, xpos);		// Process mouse input
-		defaultShader.setMat4(view, "view");	// Pass the rotated model to the shaders
 
 		// Draw the xAxis
 		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
@@ -298,14 +290,13 @@ int main()
 		shader.setMat4(view, "view");
 		shader.setMat4(projection, "projection");
 
-		// Draw the 3D generated shape
-		if(show3D)
+		if(show3D)	// Draw the 3D mesh
 		{
 			shape.bind();
 			glDrawElements(GL_TRIANGLES, shape.vertexCount, GL_UNSIGNED_INT, nullptr);
 			shape.unbind();
 		}
-		else // Draw the 2D curve
+		else		// Draw the 2D curve
 		{
 			curve.bind();
 			glDrawArrays(GL_LINE_STRIP, 0, vertexCount);
@@ -349,15 +340,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if(key == GLFW_KEY_L && action == GLFW_PRESS)
 		lighting = !lighting;
 
-	if(key == GLFW_KEY_P && action == GLFW_PRESS)
-	{
-		perspective = !perspective;
-
-		// Reset default values
-		fov = 45.0f;
-		multiplier = 0.4f;
-	}
-
 	if(key == GLFW_KEY_M && action == GLFW_PRESS)
 	{
 		if(wireframe)
@@ -374,22 +356,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if(perspective)
-	{
-		// Decrease the fov if the user scrolls down
-		fov -= 2.0f * static_cast<float>(yoffset);
+	// Decrease the fov if the user scrolls down
+	fov -= 2.0f * static_cast<float>(yoffset);
 
-		// If the value is too low
-		if(fov < 10.0f)
-			fov = 10.0f;
-	} else
-	{
-		multiplier -= 0.05f * static_cast<float>(yoffset);
-
-		// If the value is too low
-		if(multiplier < 0.1f)
-			multiplier = 0.1f;
-	}
+	// If the value is too low
+	if(fov < 10.0f)
+		fov = 10.0f;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
