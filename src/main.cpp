@@ -70,8 +70,8 @@ int main()
 
 	// GLFW initialization
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -126,7 +126,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = std::sin(x);
+		float y = std::pow(2.71828f, x);
 		float z = 0.0;
 
 		vertices.push_back(x);
