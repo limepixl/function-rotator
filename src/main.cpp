@@ -6,9 +6,6 @@
 #include "Shader.hpp"
 #include "Mesh.hpp"
 
-// Simplify a fraction to its simplest form
-glm::vec2 simplifyFraction(int numerator, int denominator);
-
 // Process mouse input
 void processMouse(GLFWwindow* window, double& xpos);
 
@@ -32,7 +29,6 @@ int main()
 	// Constants
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
-	const glm::vec2 ASPECT = simplifyFraction(WIDTH, HEIGHT);
 
 	// Bounds of function
 	float a, b;
@@ -252,7 +248,7 @@ int main()
 		defaultShader.useProgram();
 
 		// Perspective projection matrix creation
-		glm::mat4 projection = glm::perspective(glm::radians(fov), ASPECT.x / ASPECT.y, 0.1f, 50.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(fov), static_cast<float>(WIDTH) / HEIGHT, 0.1f, 50.0f);
 		defaultShader.setMat4(projection, "projection");
 
 		// Model matrix creation
@@ -275,21 +271,15 @@ int main()
 
 		// Draw the xAxis
 		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
-		xAxis.bind();
-		glDrawArrays(GL_LINE_STRIP, 0, xAxis.vertexCount);
-		xAxis.unbind();
+		xAxis.draw();
 
 		// Draw the yAxis
 		defaultShader.setVec3(0.0f, 0.0f, 1.0f, "col");
-		yAxis.bind();
-		glDrawArrays(GL_LINE_STRIP, 0, yAxis.vertexCount);
-		yAxis.unbind();
+		yAxis.draw();
 
 		// Draw the zAxis
 		defaultShader.setVec3(0.0f, 1.0f, 0.0f, "col");
-		zAxis.bind();
-		glDrawArrays(GL_LINE_STRIP, 0, zAxis.vertexCount);
-		zAxis.unbind();
+		zAxis.draw();
 
 		// Switch to mesh shader
 		shader.useProgram();
@@ -310,15 +300,11 @@ int main()
 
 		if(show3D)	// Draw the 3D mesh
 		{
-			shape.bind();
-			glDrawElements(GL_TRIANGLES, shape.vertexCount, GL_UNSIGNED_INT, nullptr);
-			shape.unbind();
+			shape.draw();
 		}
 		else		// Draw the 2D curve
 		{
-			curve.bind();
-			glDrawArrays(GL_LINE_STRIP, 0, vertexCount);
-			curve.unbind();
+			curve.draw();
 		}
 
 		glfwSwapBuffers(window);
@@ -328,23 +314,6 @@ int main()
 	// Delete the window
 	glfwTerminate();
 	return 0;
-}
-
-glm::vec2 simplifyFraction(int numerator, int denominator)
-{
-	int a = numerator;
-	int b = denominator;
-	while(b != 0)
-	{
-		int t = b;
-		b = a % b;
-		a = t;
-	}
-
-	numerator /= a;
-	denominator /= a;
-
-	return glm::vec2(numerator, denominator);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
