@@ -26,11 +26,11 @@ static bool rotate = true;		// Whether to rotate the object
 
 int main()
 {
-	// Constants
+	// Window dimensions
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
 
-	// Bounds of function
+	// Bounds of the function
 	float a, b;
 	std::cout << "Enter the bounds of the function." << std::endl;
 	std::cout << "Enter a value to start from (a): ";
@@ -72,7 +72,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Window creation
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Function rotator", nullptr, nullptr);
+	GLFWwindow * window = glfwCreateWindow(WIDTH, HEIGHT, "Function rotator", nullptr, nullptr);
 	if(window == nullptr)
 	{
 		std::cout << "Failed to create window!" << std::endl;
@@ -85,7 +85,7 @@ int main()
 	glfwSwapInterval(1); // VSync
 
 	// GLAD init
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
@@ -94,7 +94,7 @@ int main()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	// Window background color
 	glEnable(GL_DEPTH_TEST);
 
-	// Generate the lines for the axes
+	// Generate a mesh for each axis
 	std::vector<float> xAxisV;
 	std::vector<float> yAxisV;
 	std::vector<float> zAxisV;
@@ -118,7 +118,7 @@ int main()
 
 	// Generate the function's curve as plotted on a 2D xy plane
 	std::vector<float> vertices;
-	for(float s = a; s<=b; s+=incrementSize)
+	for(float s = a; s <= b; s += incrementSize)
 	{
 		// Insert function here
 		float x = s;
@@ -130,16 +130,16 @@ int main()
 		vertices.push_back(z);
 	}
 	Mesh curve(vertices);
-	
+
 	// Increment size to rotate by (in degrees),
 	// to reach 360 degrees with the number of
 	// set iterations.
-	float mul = static_cast<float>(360)/iterations;
+	float mul = static_cast<float>(360) / iterations;
 
 	// Generate rotated vertices along the circle
 	// defined by the function's value as the radius.
 	std::vector<float> vertices3D;
-	for(size_t i = 0; i < vertices.size(); i+=3)
+	for(size_t i = 0; i < vertices.size(); i += 3)
 	{
 		glm::vec3 current(vertices[i], vertices[i + 1], vertices[i + 2]);
 
@@ -152,8 +152,7 @@ int main()
 			{
 				// Rotate along the X axis
 				rotator = glm::rotate(rotator, glm::radians(mul * j), { 1.0, 0.0, 0.0 });
-			}
-			else if(axis == 'y' || axis == 'Y')
+			} else if(axis == 'y' || axis == 'Y')
 			{
 				// Rotate along the Y axis
 				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 1.0, 0.0 });
@@ -172,35 +171,30 @@ int main()
 		}
 	}
 
-	// This is the number of actual vertices, - the number of rotations
+	// This is the number of actual vertices - the number of rotations
 	// for each vertex. It's basically the number of faces.
 	size_t numIterations = vertices3D.size() / 3 - iterations - 1;
 
-	// Value to track which index the for loop has landed on.
-	unsigned int index = 0;
-
 	// Store indices
 	std::vector<unsigned int> indices;
-	for(int i = 0; i < numIterations; i++)
+	for(unsigned int i = 0; i < numIterations; i++)
 	{
 		// ...
 		// 3 2 7 6 ...
 		// 0 1 4 5 ...
 
-		indices.push_back(index);
-		indices.push_back(index + 1);
-		indices.push_back(index + iterations + 1);
-		indices.push_back(index + iterations + 1);
-		indices.push_back(index + iterations);
-		indices.push_back(index);
-
-		index++;
+		indices.push_back(i);
+		indices.push_back(i + 1);
+		indices.push_back(i + iterations + 1);
+		indices.push_back(i + iterations + 1);
+		indices.push_back(i + iterations);
+		indices.push_back(i);
 	}
 
 	// Calculate normal vectors
 	std::vector<float> normals;
 	size_t iterationsPerVertex = static_cast<size_t>(3) * iterations;
-	for(size_t i = 0; i < vertices3D.size() - iterationsPerVertex; i+=3)
+	for(size_t i = 0; i < vertices3D.size() - iterationsPerVertex; i += 3)
 	{
 		// The first of 2 triangles in each face
 		// C
@@ -209,9 +203,9 @@ int main()
 		// |  \
 		// A---B
 
-		glm::vec3 A { vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
-		glm::vec3 B { vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
-		glm::vec3 C { vertices3D[i + iterationsPerVertex], vertices3D[i + 1 + iterationsPerVertex], vertices3D[i + 2 + iterationsPerVertex] };
+		glm::vec3 A{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
+		glm::vec3 B{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
+		glm::vec3 C{ vertices3D[i + iterationsPerVertex], vertices3D[i + 1 + iterationsPerVertex], vertices3D[i + 2 + iterationsPerVertex] };
 
 		// For the triangle ABC
 		glm::vec3 u = B - A;
@@ -242,7 +236,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Process mouse input
-		processMouse(window, xpos);	
+		processMouse(window, xpos);
 
 		// Setup full color shader
 		defaultShader.useProgram();
@@ -265,7 +259,7 @@ int main()
 		// If automatic rotation is enabled
 		if(rotate)
 		{
-			view = glm::rotate(view, glm::radians(25.0f * static_cast<float>(glfwGetTime())), {0.0, 1.0, 0.0});
+			view = glm::rotate(view, glm::radians(25.0f * static_cast<float>(glfwGetTime())), { 0.0, 1.0, 0.0 });
 			defaultShader.setMat4(view, "view");
 		}
 
@@ -299,13 +293,9 @@ int main()
 		shader.setMat4(projection, "projection");
 
 		if(show3D)	// Draw the 3D mesh
-		{
 			shape.draw();
-		}
 		else		// Draw the 2D curve
-		{
 			curve.draw();
-		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

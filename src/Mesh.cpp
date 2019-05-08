@@ -1,13 +1,6 @@
 #include "Mesh.hpp"
 #include <glad/glad.h>
 
-Mesh::~Mesh()
-{
-	glDeleteBuffers(1, &EBO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteVertexArrays(1, &VAO);
-}
-
 Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned int>& indices, const std::vector<float>& normals)
 {
 	// Check if indices have been given
@@ -62,6 +55,13 @@ Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+Mesh::~Mesh()
+{
+	glDeleteBuffers(1, &EBO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &VAO);
 }
 
 void Mesh::draw()
