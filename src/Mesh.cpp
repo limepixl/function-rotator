@@ -3,6 +3,8 @@
 
 Mesh::~Mesh()
 {
+	glDeleteBuffers(1, &EBO);
+	glDeleteBuffers(1, &VBO);
 	glDeleteVertexArrays(1, &VAO);
 }
 
@@ -30,7 +32,6 @@ Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned
 	glBindVertexArray(VAO);
 	
 	// Passing vertex positions
-	unsigned int VBO;
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertexPositions.size() * sizeof(float), vertexPositions.data(), GL_STATIC_DRAW);
@@ -63,18 +64,27 @@ Mesh::Mesh(const std::vector<float>& vertexPositions, const std::vector<unsigned
 	glBindVertexArray(0);
 }
 
-void Mesh::bind()
+void Mesh::draw()
 {
-	glBindVertexArray(VAO);
-	
 	if(hasIndices)
+	{
+		// Bind
+		glBindVertexArray(VAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-}
 
-void Mesh::unbind()
-{
-	if(hasIndices)
+		glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, nullptr);
+
+		// Unbind
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	
-	glBindVertexArray(0);
+		glBindVertexArray(0);
+	} else
+	{
+		// Bind
+		glBindVertexArray(VAO);
+
+		glDrawArrays(GL_LINE_STRIP, 0, vertexCount);
+
+		// Unbind
+		glBindVertexArray(0);
+	}
 }

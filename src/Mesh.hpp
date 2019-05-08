@@ -3,8 +3,9 @@
 
 struct Mesh
 {
-	unsigned int VAO;
-	unsigned int EBO;
+	unsigned int VAO;	// Vertex Array Object
+	unsigned int VBO;	// Positions buffer
+	unsigned int EBO;	// Index buffer
 	int vertexCount;
 	bool hasIndices;
 	bool hasNormals;
@@ -15,6 +16,5 @@ struct Mesh
 		 const std::vector<unsigned int>& indices = std::vector<unsigned int>(),
 		 const std::vector<float>& normals = std::vector<float>());
 
-	void bind();
-	void unbind();
+	void draw();
 };
