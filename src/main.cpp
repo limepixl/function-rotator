@@ -250,7 +250,7 @@ int main()
 
 		// View matrix creation
 		glm::mat4 view(1.0);
-		view = glm::translate(view, { 0.0f, -0.5f, -10.0f });	// Move the camera above and away from the mesh
+		view = glm::translate(view, { 0.0f, -0.25f, -10.0f });	// Move the camera above and away from the mesh
 		view = glm::rotate(view, glm::radians(20.0f), { 1.0f, 0.0f, 0.0f }); // Tilt the camera downwards
 		view = glm::rotate(view, glm::radians(static_cast<float>(xpos)), { 0.0, 1.0, 0.0 }); // Adjust position based on mouse
 		defaultShader.setMat4(view, "view");	// Pass the rotated view matrix to the shaders
@@ -336,8 +336,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	fov -= 2.0f * static_cast<float>(yoffset);
 
 	// If the value is too low
-	if(fov < 10.0f)
-		fov = 10.0f;
+	if(fov < 5.0f)
+		fov = 5.0f;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
