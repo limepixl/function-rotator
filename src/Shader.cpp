@@ -57,6 +57,10 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 		std::cout << message << std::endl;
 	}
 
+	// Attribute locations
+	glBindAttribLocation(ID, 0, "aPos");
+	glBindAttribLocation(ID, 1, "aNormal");
+
 	// Shader program creation
 	ID = glCreateProgram();
 	glAttachShader(ID, vertex);
