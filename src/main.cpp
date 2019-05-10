@@ -226,9 +226,6 @@ int main()
 	// Variable used for model matrix rotation
 	double xpos = 0.0;
 
-	// Number of vertices that make up the initial curve
-	int vertexCount = static_cast<int>(vertices.size() / 3);
-
 	while(!glfwWindowShouldClose(window))
 	{
 		// Clear window
