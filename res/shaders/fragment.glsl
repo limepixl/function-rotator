@@ -1,27 +1,41 @@
 #version 130
 in vec3 Normal;
-in vec3 FragPos;  
+in vec3 FragPos;
 out vec4 color;
 
 uniform vec3 col;
 uniform vec3 lightPos;
+uniform float planeCoord;
+uniform int plane;	// 0 for x axis, 1 for y axis, 2 for z axis
 
 void main()
 {
-	if(lightPos.y <= -100.0)
+	if(plane == 0 && FragPos.x > planeCoord)
 	{
-		color = vec4(col, 1.0);
-		return;
+		if(FragPos.x < planeCoord + 0.01f)
+		{
+			color = vec4(1.0, 0.0, 1.0, 1.0);
+			return;
+		}
+		discard;
+	}
+	else if(plane == 1 && FragPos.y > planeCoord)
+	{
+		if(FragPos.y < planeCoord + 0.01f)
+		{
+			color = vec4(1.0, 0.0, 1.0, 1.0);
+			return;
+		}
+		discard;
+	} else if(plane == 2 && FragPos.z > planeCoord)
+	{
+		if(FragPos.z < planeCoord + 0.01f)
+		{
+			color = vec4(1.0, 0.0, 1.0, 1.0);
+			return;
+		}
+		discard;
 	}
 
-	vec3 lightColor = vec3(1.0, 1.0, 1.0);
-	vec3 norm = normalize(Normal);
-  	
-    // diffuse 
-    vec3 lightDir = normalize(lightPos - FragPos);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
-            
-    vec3 result = diffuse * col;
-	color = vec4(result, 1.0);
+	color = vec4(col, 1.0);
 }

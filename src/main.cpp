@@ -6,6 +6,15 @@
 #include "Shader.hpp"
 #include "Mesh.hpp"
 
+// Rotate all points of a mesh around an axis
+std::vector<float> RotateAroundAxis(std::vector<float>& vertices2D, int numRotations, char axis);
+
+// Map a value from one range to another
+inline float Map(float oldmin, float oldmax, float newmin, float newmax, float current)
+{
+	return newmin + (newmax - newmin) * ((current - oldmin) / (oldmax - oldmin));
+}
+
 // Process mouse input
 void processMouse(GLFWwindow* window, double& xpos);
 
@@ -42,7 +51,7 @@ int main()
 	// AKA the step size for each x.
 	float incrementSize;
 	std::cout << "Enter the increment size between any 2 X values: " << std::endl;
-	std::cout << "(0 for default, 0.05) ";
+	std::cout << "(0 for default, 0.01) ";
 	std::cin >> incrementSize;
 
 	// The number of times the points will be rotated, and
@@ -58,9 +67,24 @@ int main()
 	std::cout << "(X, Y or Z) ";
 	std::cin >> axis;
 
+	// The desired intersection axis
+	int intAxisNum;
+	char intAxis;
+	std::cout << "Enter the desired axis of intersection: " << std::endl;
+	std::cin >> intAxis;
+	
+	if(intAxis == 'x' || intAxis == 'X')
+		intAxisNum = 0;
+	else if(intAxis == 'y' || intAxis == 'Y')
+		intAxisNum = 1;
+	else if(intAxis == 'z' || intAxis == 'Z')
+		intAxisNum = 2;
+	else
+		intAxisNum = -1;
+
 	// Default values
 	if(incrementSize <= 0.0f)
-		incrementSize = 0.05f;
+		incrementSize = 0.01f;
 	if(iterations == 0)
 		iterations = 100;
 
@@ -92,6 +116,8 @@ int main()
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	// Window background color
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Generate a mesh for each axis
 	std::vector<float> xAxisV;
@@ -121,7 +147,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = std::pow(2.71828f, x);
+		float y = sin(x*x);
 		float z = 0.0;
 
 		vertices.push_back(x);
@@ -130,45 +156,49 @@ int main()
 	}
 	Mesh curve(vertices);
 
-	// Increment size to rotate by (in degrees),
-	// to reach 360 degrees with the number of
-	// set iterations.
-	float mul = static_cast<float>(360) / iterations;
+	// Plane for intersection visualization
+	float planeCoord = 0.0f;
+	std::vector<float> verticesPlane;
+
+	if(intAxis == 'x' || intAxis == 'X')
+	{
+		verticesPlane =
+		{
+			0.0f, -1.0f, -1.0f,
+			0.0f, -1.0f, 1.0f,
+			0.0f, 1.0f, 1.0f,
+			0.0f, 1.0f, 1.0f,
+			0.0f, 1.0f, -1.0f,
+			0.0f, -1.0f, -1.0f
+		};
+	} else if(intAxis == 'y' || intAxis == 'Y')
+	{
+		verticesPlane =
+		{
+			-1.0f, 0.0f, -1.0f,
+			1.0f, 0.0f, -1.0f,
+			1.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 1.0f,
+			-1.0f, 0.0f, 1.0f,
+			-1.0f, 0.0f, -1.0f
+		};
+	} else
+	{
+		verticesPlane =
+		{
+			-1.0f, -1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f,
+			-1.0f, -1.0f, 0.0f
+		};
+	}
+	Mesh plane(verticesPlane);
 
 	// Generate rotated vertices along the circle
 	// defined by the function's value as the radius.
-	std::vector<float> vertices3D;
-	for(size_t i = 0; i < vertices.size(); i += 3)
-	{
-		glm::vec3 current(vertices[i], vertices[i + 1], vertices[i + 2]);
-
-		// Complete a full circle 
-		for(int j = 0; j <= iterations; j++)
-		{
-			glm::mat4 rotator(1.0);
-
-			if(axis == 'x' || axis == 'X')
-			{
-				// Rotate along the X axis
-				rotator = glm::rotate(rotator, glm::radians(mul * j), { 1.0, 0.0, 0.0 });
-			} else if(axis == 'y' || axis == 'Y')
-			{
-				// Rotate along the Y axis
-				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 1.0, 0.0 });
-			} else
-			{
-				// Rotate along the Z axis
-				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 0.0, 1.0 });
-			}
-
-			// Rotated vertex
-			glm::vec4 rotatedCurrent = rotator * glm::vec4(current, 1.0);
-
-			vertices3D.push_back(rotatedCurrent.x);
-			vertices3D.push_back(rotatedCurrent.y);
-			vertices3D.push_back(rotatedCurrent.z);
-		}
-	}
+	std::vector<float> vertices3D = RotateAroundAxis(vertices, iterations, axis);
 
 	// This is the number of actual vertices - the number of rotations
 	// for each vertex. It's basically the number of faces.
@@ -245,11 +275,14 @@ int main()
 		glm::mat4 model(1.0);
 		defaultShader.setMat4(model, "model");
 
+		// Angle to rotate view matrix by, normalized
+		float nAngle = Map(0.0f, WIDTH, -180.0f, 180.0f, static_cast<float>(xpos));
+
 		// View matrix creation
 		glm::mat4 view(1.0);
 		view = glm::translate(view, { 0.0f, -0.25f, -10.0f });	// Move the camera above and away from the mesh
 		view = glm::rotate(view, glm::radians(20.0f), { 1.0f, 0.0f, 0.0f }); // Tilt the camera downwards
-		view = glm::rotate(view, glm::radians(static_cast<float>(xpos)), { 0.0, 1.0, 0.0 }); // Adjust position based on mouse
+		view = glm::rotate(view, glm::radians(nAngle), { 0.0, 1.0, 0.0 }); // Adjust position based on mouse
 		defaultShader.setMat4(view, "view");	// Pass the rotated view matrix to the shaders
 
 		// If automatic rotation is enabled
@@ -261,18 +294,52 @@ int main()
 
 		// Draw the xAxis
 		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
-		xAxis.draw();
+		xAxis.drawNonIndexed();
 
 		// Draw the yAxis
 		defaultShader.setVec3(0.0f, 0.0f, 1.0f, "col");
-		yAxis.draw();
+		yAxis.drawNonIndexed();
 
 		// Draw the zAxis
 		defaultShader.setVec3(0.0f, 1.0f, 0.0f, "col");
-		zAxis.draw();
+		zAxis.drawNonIndexed();
+
+		// Process plane position
+		if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		{
+			// Get cursor pisition
+			double x, y;
+			glfwGetCursorPos(window, &x, &y);
+
+			if(intAxisNum == 0)
+				planeCoord = Map(0.0f, WIDTH, -10.0f, 10.0f, (float)x);
+			else if(intAxisNum == 1)
+				planeCoord = Map(WIDTH, 0.0f, -10.0f, 10.0f, (float)y);
+			else if(intAxisNum == 2)
+				planeCoord = Map(0.0f, WIDTH, -10.0f, 10.0f, (float)x);
+		}
+
+		glm::mat4 temp = model;
+		if(intAxisNum == 0)
+			model = glm::translate(model, glm::vec3(planeCoord, 0.0f, 0.0f));
+		else if(intAxisNum == 1)
+			model = glm::translate(model, glm::vec3(0.0f, planeCoord, 0.0f));
+		else if(intAxisNum == 2)
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, planeCoord));
+		defaultShader.setMat4(model, "model");
+
+		// Draw the plane
+		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
+		plane.drawNonIndexed();
+
+		// Reset position of model
+		model = temp;
+		defaultShader.setMat4(model, "model"); 
 
 		// Switch to mesh shader
 		shader.useProgram();
+		shader.setInt(intAxisNum, "plane");
+		shader.setFloat(planeCoord, "planeCoord");
 
 		// Set all uniforms for mesh
 		if(lighting)
@@ -281,7 +348,7 @@ int main()
 			shader.setVec3(0.0f, 50.0f, 0.0f, "lightPos");
 		} else
 		{
-			shader.setVec3(0.1f, 0.1f, 0.1f, "col");
+			shader.setVec3(0.2f, 0.2f, 0.2f, "col");
 			shader.setVec3(0.0f, -500.0f, 0.0f, "lightPos");
 		}
 		shader.setMat4(model, "model");
@@ -291,7 +358,7 @@ int main()
 		if(show3D)	// Draw the 3D mesh
 			shape.draw();
 		else		// Draw the 2D curve
-			curve.draw();
+			curve.drawNonIndexed();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -299,6 +366,8 @@ int main()
 
 	// Delete the window
 	glfwTerminate();
+
+	std::cin.get();
 	return 0;
 }
 
@@ -340,6 +409,52 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+}
+
+std::vector<float> RotateAroundAxis(std::vector<float>& vertices2D, int numRotations, char axis)
+{
+	// Increment size to rotate by (in degrees),
+	// to reach 360 degrees with the number of
+	// set iterations.
+	float mul = 360.0f / numRotations;
+
+	std::vector<float> vertices3D;
+	for(size_t i = 0; i < vertices2D.size(); i += 3)
+	{
+		glm::vec3 current(vertices2D[i], vertices2D[i + 1], vertices2D[i + 2]);
+
+		// Complete a full circle 
+		for(int j = 0; j < numRotations; j++)
+		{
+			glm::mat4 rotator(1.0);
+
+			if(axis == 'x' || axis == 'X')
+			{
+				// Rotate along the X axis
+				rotator = glm::rotate(rotator, glm::radians(mul * j), { 1.0, 0.0, 0.0 });
+			} else if(axis == 'y' || axis == 'Y')
+			{
+				// Rotate along the Y axis
+				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 1.0, 0.0 });
+			} else if(axis == 'z' || axis == 'Z')
+			{
+				// Rotate along the Z axis
+				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 0.0, 1.0 });
+			} else
+			{
+				std::cout << "Axis " << axis << " is not supported!" << std::endl;
+			}
+
+			// Rotated vertex
+			glm::vec4 rotatedCurrent = rotator * glm::vec4(current, 1.0);
+
+			vertices3D.push_back(rotatedCurrent.x);
+			vertices3D.push_back(rotatedCurrent.y);
+			vertices3D.push_back(rotatedCurrent.z);
+		}
+	}
+
+	return vertices3D;
 }
 
 void processMouse(GLFWwindow* window, double& xpos)

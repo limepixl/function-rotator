@@ -66,25 +66,24 @@ Mesh::~Mesh()
 
 void Mesh::draw()
 {
-	if(hasIndices)
-	{
-		// Bind
-		glBindVertexArray(VAO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	// Bind
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-		glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, nullptr);
 
-		// Unbind
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-	} else
-	{
-		// Bind
-		glBindVertexArray(VAO);
+	// Unbind
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);	
+}
 
-		glDrawArrays(GL_LINE_STRIP, 0, vertexCount);
+void Mesh::drawNonIndexed(bool triFan)
+{
+	// Bind
+	glBindVertexArray(VAO);
 
-		// Unbind
-		glBindVertexArray(0);
-	}
+	glDrawArrays((triFan ? GL_TRIANGLE_FAN : GL_LINE_STRIP), 0, vertexCount);
+
+	// Unbind
+	glBindVertexArray(0);
 }

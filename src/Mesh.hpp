@@ -20,4 +20,5 @@ struct Mesh
 	~Mesh();
 
 	void draw();
+	void drawNonIndexed(bool triFan = false);
 };
