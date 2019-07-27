@@ -1,4 +1,4 @@
-#version 130
+#version 120
 in vec3 aPos;
 
 uniform mat4 model;

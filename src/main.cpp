@@ -27,7 +27,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 // Window resize callback
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-static bool lighting = false;	// Whether to show the lighting
+static bool lighting = true;	// Whether to show the lighting
 static bool wireframe = true;	// Whether to show the mesh as a wireframe mesh
 static float fov = 45.0f;		// Field of view for projection matrix
 static bool show3D = false;		// Whether to show the 3D view or not
@@ -49,30 +49,47 @@ int main()
 
 	// Increment size between every 2 points on the curve.
 	// AKA the step size for each x.
-	float incrementSize;
+	float incrementSize = 0.0f;;
+#ifdef _DEBUG
 	std::cout << "Enter the increment size between any 2 X values: " << std::endl;
 	std::cout << "(0 for default, 0.01) ";
 	std::cin >> incrementSize;
+#endif
 
 	// The number of times the points will be rotated, and
 	// the number of points in each circle at each x value.
-	int iterations;
+	int numRotations = 0;
+#ifdef _DEBUG
 	std::cout << "Enter the desired number of rotations for each vertex: " << std::endl;
 	std::cout << "(0 for default, 100) ";
-	std::cin >> iterations;
+	std::cin >> numRotations;
+#endif
+
+	// Default values
+	if(incrementSize <= 0.0f)
+		incrementSize = 0.01f;
+	if(numRotations == 0)
+		numRotations = 100;
 
 	// The desired axis of rotation
 	char axis;
 	std::cout << "Enter the desired axis of rotation: " << std::endl;
 	std::cout << "(X, Y or Z) ";
 	std::cin >> axis;
+	if(axis != 'x' && axis != 'X' && axis != 'y' && axis != 'Y' && axis != 'z' && axis != 'Z')
+	{
+		std::cout << "Invalid axis entered!" << std::endl;
+		glfwTerminate();
+		return 0;
+	}
 
 	// The desired intersection axis
-	int intAxisNum;
 	char intAxis;
 	std::cout << "Enter the desired axis of intersection: " << std::endl;
+	std::cout << "(X, Y or Z) ";
 	std::cin >> intAxis;
 	
+	int intAxisNum;
 	if(intAxis == 'x' || intAxis == 'X')
 		intAxisNum = 0;
 	else if(intAxis == 'y' || intAxis == 'Y')
@@ -80,18 +97,16 @@ int main()
 	else if(intAxis == 'z' || intAxis == 'Z')
 		intAxisNum = 2;
 	else
-		intAxisNum = -1;
-
-	// Default values
-	if(incrementSize <= 0.0f)
-		incrementSize = 0.01f;
-	if(iterations == 0)
-		iterations = 100;
+	{
+		std::cout << "Invalid axis entered!\n";
+		glfwTerminate();
+		return 0;
+	}
 
 	// GLFW initialization
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 
 	// Window creation
@@ -110,7 +125,8 @@ int main()
 	// GLAD init
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
+		std::cout << "Failed to initialize GLAD. Please make sure you have updated your graphics drivers." << std::endl;
+		std::cout << "If this error persists after updating, your GPU does not support OpenGL 2.1, which is the minimum requirement." << std::endl;
 		return -1;
 	}
 	glViewport(0, 0, WIDTH, HEIGHT);
@@ -147,8 +163,8 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = sin(x*x);
-		float z = 0.0;
+		float y = sin(x);
+		float z = 0.0f;
 
 		vertices.push_back(x);
 		vertices.push_back(y);
@@ -157,10 +173,10 @@ int main()
 	Mesh curve(vertices);
 
 	// Plane for intersection visualization
-	float planeCoord = 0.0f;
+	float planeCoord = 2.0f;
 	std::vector<float> verticesPlane;
 
-	if(intAxis == 'x' || intAxis == 'X')
+	if(intAxisNum == 0) // X
 	{
 		verticesPlane =
 		{
@@ -171,7 +187,7 @@ int main()
 			0.0f, 1.0f, -1.0f,
 			0.0f, -1.0f, -1.0f
 		};
-	} else if(intAxis == 'y' || intAxis == 'Y')
+	} else if(intAxisNum == 1) // Y
 	{
 		verticesPlane =
 		{
@@ -182,7 +198,7 @@ int main()
 			-1.0f, 0.0f, 1.0f,
 			-1.0f, 0.0f, -1.0f
 		};
-	} else
+	} else if(intAxisNum == 2) // Z
 	{
 		verticesPlane =
 		{
@@ -198,11 +214,11 @@ int main()
 
 	// Generate rotated vertices along the circle
 	// defined by the function's value as the radius.
-	std::vector<float> vertices3D = RotateAroundAxis(vertices, iterations, axis);
+	std::vector<float> vertices3D = RotateAroundAxis(vertices, numRotations, axis);
 
 	// This is the number of actual vertices - the number of rotations
 	// for each vertex. It's basically the number of faces.
-	size_t numIterations = vertices3D.size() / 3 - iterations - 1;
+	size_t numIterations = vertices3D.size() / 3 - numRotations - 1;
 
 	// Store indices
 	std::vector<unsigned int> indices;
@@ -214,16 +230,16 @@ int main()
 
 		indices.push_back(i);
 		indices.push_back(i + 1);
-		indices.push_back(i + iterations + 1);
-		indices.push_back(i + iterations + 1);
-		indices.push_back(i + iterations);
+		indices.push_back(i + numRotations + 1);
+		indices.push_back(i + numRotations + 1);
+		indices.push_back(i + numRotations);
 		indices.push_back(i);
 	}
 
 	// Calculate normal vectors
 	std::vector<float> normals;
-	size_t iterationsPerVertex = static_cast<size_t>(3) * iterations;
-	for(size_t i = 0; i < vertices3D.size() - iterationsPerVertex; i += 3)
+	size_t rotationsPerVertex = static_cast<size_t>(3) * numRotations;
+	for(size_t i = 0; i < vertices3D.size() - rotationsPerVertex; i += 3)
 	{
 		// The first of 2 triangles in each face
 		// C
@@ -234,7 +250,7 @@ int main()
 
 		glm::vec3 A{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
 		glm::vec3 B{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
-		glm::vec3 C{ vertices3D[i + iterationsPerVertex], vertices3D[i + 1 + iterationsPerVertex], vertices3D[i + 2 + iterationsPerVertex] };
+		glm::vec3 C{ vertices3D[i + rotationsPerVertex], vertices3D[i + 1 + rotationsPerVertex], vertices3D[i + 2 + rotationsPerVertex] };
 
 		// For the triangle ABC
 		glm::vec3 u = B - A;
@@ -314,9 +330,9 @@ int main()
 			if(intAxisNum == 0)
 				planeCoord = Map(0.0f, WIDTH, -10.0f, 10.0f, (float)x);
 			else if(intAxisNum == 1)
-				planeCoord = Map(WIDTH, 0.0f, -10.0f, 10.0f, (float)y);
+				planeCoord = Map(HEIGHT, 0.0f, -5.0f, 5.0f, (float)y);
 			else if(intAxisNum == 2)
-				planeCoord = Map(0.0f, WIDTH, -10.0f, 10.0f, (float)x);
+				planeCoord = Map(WIDTH, 0.0f, -10.0f, 10.0f, (float)x);
 		}
 
 		glm::mat4 temp = model;

@@ -1,9 +1,9 @@
-#version 130
+#version 120
 in vec3 aPos;
 in vec3 aNormal;
 
-out vec3 Normal;
-out vec3 FragPos;
+varying out vec3 Normal;
+varying out vec3 FragPos;
 
 uniform mat4 model;
 uniform mat4 view;

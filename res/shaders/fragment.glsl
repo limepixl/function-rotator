@@ -1,7 +1,7 @@
-#version 130
+#version 120
 in vec3 Normal;
 in vec3 FragPos;
-out vec4 color;
+varying out vec4 color;
 
 uniform vec3 col;
 uniform vec3 lightPos;
@@ -37,5 +37,12 @@ void main()
 		discard;
 	}
 
-	color = vec4(col, 1.0);
+	// Diffuse lighting
+	vec3 lightDir = normalize(lightPos - FragPos);
+	float diff = max(dot(normalize(Normal), lightDir), 0.0);
+
+	if(lightPos.y < -400.0)
+		color = vec4(col, 0.2);
+	else
+		color = vec4(col * diff, 1.0);
 }

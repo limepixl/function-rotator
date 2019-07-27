@@ -1,5 +1,5 @@
-#version 130
-out vec4 color;
+#version 120
+varying out vec4 color;
 
 uniform vec3 col;
 
