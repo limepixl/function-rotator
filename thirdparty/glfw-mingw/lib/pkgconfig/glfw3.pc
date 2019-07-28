@@ -1,7 +1,7 @@
-prefix=C:/Program Files/GLFW
+prefix=C:/Users/limel/Downloads/GLFW-MinGW-5.1
 exec_prefix=${prefix}
-includedir=C:/Program Files/GLFW/include
-libdir=C:/Program Files/GLFW/lib
+includedir=C:/Users/limel/Downloads/GLFW-MinGW-5.1/include
+libdir=C:/Users/limel/Downloads/GLFW-MinGW-5.1/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input

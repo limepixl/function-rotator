@@ -54,7 +54,7 @@ endif()
 add_library(glfw STATIC IMPORTED)
 
 set_target_properties(glfw PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "C:/Program Files/GLFW/include"
+  INTERFACE_INCLUDE_DIRECTORIES "C:/Users/limel/Downloads/GLFW-MinGW-5.1/include"
 )
 
 # Load information for each installed configuration.

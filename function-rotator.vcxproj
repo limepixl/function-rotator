@@ -123,7 +123,7 @@
       <AdditionalIncludeDirectories>C:\dev\projects\function-rotator\thirdparty\glm;C:\dev\projects\function-rotator\thirdparty\glad\include;C:\dev\projects\function-rotator\thirdparty\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
