@@ -1,0 +1,1 @@
+PowerShell -NoExit -Command "$env:Path += '%~dp0\x86\bin'"
