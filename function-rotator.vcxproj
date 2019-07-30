@@ -135,6 +135,7 @@
   <ItemGroup>
     <ClInclude Include="src\Mesh.hpp" />
     <ClInclude Include="src\Shader.hpp" />
+    <ClInclude Include="src\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

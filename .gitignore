@@ -9,3 +9,5 @@
 *.html
 *.js
 *.wasm
+.vscode
+*.pyc

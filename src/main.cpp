@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "utils.h"
 #include "Shader.hpp"
 #include "Mesh.hpp"
 
@@ -39,6 +40,11 @@ int main()
 	const int WIDTH = 1280;
 	const int HEIGHT = 720;
 
+	// Enter and parse the function
+	std::string function;
+	std::getline(std::cin, function);
+	ParseFunction(function);
+
 	// Bounds of the function
 	float a, b;
 	std::cout << "Enter the bounds of the function." << std::endl;
@@ -49,7 +55,7 @@ int main()
 
 	// Increment size between every 2 points on the curve.
 	// AKA the step size for each x.
-	float incrementSize = 0.0f;;
+	float incrementSize = 0.0f;
 #ifdef _DEBUG
 	std::cout << "Enter the increment size between any 2 X values: " << std::endl;
 	std::cout << "(0 for default, 0.01) ";
