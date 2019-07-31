@@ -43,7 +43,8 @@ int main()
 	// Enter and parse the function
 	std::string function;
 	std::getline(std::cin, function);
-	ParseFunction(function);
+	std::vector<std::string> parsed = ParseFunction(function);
+	float value = EvaluateFunction(parsed);
 
 	// Bounds of the function
 	float a, b;

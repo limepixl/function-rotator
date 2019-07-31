@@ -58,7 +58,7 @@ inline bool IsNumber(const std::string& str)
 	return result;
 }
 
-void ParseFunction(std::string& function)
+std::vector<std::string> ParseFunction(std::string& function)
 {
 	// TODO: Add support for non-spaced-out functions
 
@@ -150,32 +150,74 @@ void ParseFunction(std::string& function)
 		stack.pop_back();
 	}
 
+	return output;
+}
+
+float EvaluateFunction(std::vector<std::string>& function)
+{
 	// Calculate expression
 	std::vector<std::string> final;
-	for(size_t i = 0; i < output.size(); i++)
+	for(size_t i = 0; i < function.size(); i++)
 	{
-		std::string current = output[i];
+		std::string current = function[i];
 		if(IsNumber(current))
 			final.push_back(current);
 		else
 		{
 			// Grab the top 2 operads on the stack
+			std::string temp1;
 			std::string temp2 = final.back();
 			final.pop_back();
-			std::string temp1 = final.back();
-			final.pop_back();
+			if(!final.empty())
+			{
+				temp1 = final.back();
+				final.pop_back();
+			}
 
-			/*
+			int r = 0;
+			double d = 0.0;
 			switch(OperatorMap[current])
 			{
 			case ADD:
-				int result = atoi(temp1.c_str()) + atoi(temp2.c_str());
-				final.emplace_back(std::to_string(result));
+				r = atoi(temp1.c_str()) + atoi(temp2.c_str());
+				final.emplace_back(std::to_string(r));
 				break;
 			case SUB:
-
+				r = atoi(temp1.c_str()) - atoi(temp2.c_str());
+				final.emplace_back(std::to_string(r));
+				break;
+			case MUL:
+				r = atoi(temp1.c_str()) * atoi(temp2.c_str());
+				final.emplace_back(std::to_string(r));
+				break;
+			case DIV:
+				r = atoi(temp1.c_str()) / atoi(temp2.c_str());
+				final.emplace_back(std::to_string(r));
+				break;
+			case POW:
+				r = static_cast<int>(pow(atoi(temp1.c_str()), atoi(temp2.c_str())));
+				final.emplace_back(std::to_string(r));
+				break;
+			case SQRT:
+				d = sqrt(atoi(temp2.c_str()));
+				final.push_back(temp1);	// Return the unused operand
+				final.emplace_back(std::to_string(d));
+				break;
+			case SIN:
+				d = sin(atoi(temp2.c_str()));
+				final.push_back(temp1);	// Return the unused operand
+				final.emplace_back(std::to_string(d));
+				break;
+			case COS:
+				d = cos(atoi(temp2.c_str()));
+				final.push_back(temp1);	// Return the unused operand
+				final.emplace_back(std::to_string(d));
+				break;
+			default:
+				printf("Failed to parse expression and calculate value!");
 			};
-			*/
 		}
 	}
+
+	return static_cast<float>(atof(final.back().c_str()));
 }
