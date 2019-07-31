@@ -95,7 +95,7 @@ std::vector<std::string> ParseFunction(std::string& function)
 	for(size_t i = 0; i < split.size(); i++)
 	{
 		std::string token = split[i];
-		if(IsNumber(token))
+		if(IsNumber(token) || token == "x" || token == "X")
 		{
 			output.push_back(token);
 		} else if(OperatorMap[token] == LP)
@@ -153,15 +153,18 @@ std::vector<std::string> ParseFunction(std::string& function)
 	return output;
 }
 
-float EvaluateFunction(std::vector<std::string>& function)
+float EvaluateFunction(std::vector<std::string>& function, float x)
 {
 	// Calculate expression
 	std::vector<std::string> final;
 	for(size_t i = 0; i < function.size(); i++)
 	{
 		std::string current = function[i];
+
 		if(IsNumber(current))
 			final.push_back(current);
+		else if(current == "x" || current == "X")
+			final.push_back(std::to_string(x));
 		else
 		{
 			// Grab the top 2 operads on the stack
@@ -174,42 +177,41 @@ float EvaluateFunction(std::vector<std::string>& function)
 				final.pop_back();
 			}
 
-			int r = 0;
 			double d = 0.0;
 			switch(OperatorMap[current])
 			{
 			case ADD:
-				r = atoi(temp1.c_str()) + atoi(temp2.c_str());
-				final.emplace_back(std::to_string(r));
+				d = atof(temp1.c_str()) + atoi(temp2.c_str());
+				final.emplace_back(std::to_string(d));
 				break;
 			case SUB:
-				r = atoi(temp1.c_str()) - atoi(temp2.c_str());
-				final.emplace_back(std::to_string(r));
+				d = atof(temp1.c_str()) - atof(temp2.c_str());
+				final.emplace_back(std::to_string(d));
 				break;
 			case MUL:
-				r = atoi(temp1.c_str()) * atoi(temp2.c_str());
-				final.emplace_back(std::to_string(r));
+				d = atof(temp1.c_str()) * atof(temp2.c_str());
+				final.emplace_back(std::to_string(d));
 				break;
 			case DIV:
-				r = atoi(temp1.c_str()) / atoi(temp2.c_str());
-				final.emplace_back(std::to_string(r));
+				d = atof(temp1.c_str()) / atof(temp2.c_str());
+				final.emplace_back(std::to_string(d));
 				break;
 			case POW:
-				r = static_cast<int>(pow(atoi(temp1.c_str()), atoi(temp2.c_str())));
-				final.emplace_back(std::to_string(r));
+				d = pow(atof(temp1.c_str()), atof(temp2.c_str()));
+				final.emplace_back(std::to_string(d));
 				break;
 			case SQRT:
-				d = sqrt(atoi(temp2.c_str()));
+				d = sqrt(atof(temp2.c_str()));
 				final.push_back(temp1);	// Return the unused operand
 				final.emplace_back(std::to_string(d));
 				break;
 			case SIN:
-				d = sin(atoi(temp2.c_str()));
+				d = sin(atof(temp2.c_str()));
 				final.push_back(temp1);	// Return the unused operand
 				final.emplace_back(std::to_string(d));
 				break;
 			case COS:
-				d = cos(atoi(temp2.c_str()));
+				d = cos(atof(temp2.c_str()));
 				final.push_back(temp1);	// Return the unused operand
 				final.emplace_back(std::to_string(d));
 				break;

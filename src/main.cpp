@@ -44,7 +44,6 @@ int main()
 	std::string function;
 	std::getline(std::cin, function);
 	std::vector<std::string> parsed = ParseFunction(function);
-	float value = EvaluateFunction(parsed);
 
 	// Bounds of the function
 	float a, b;
@@ -170,7 +169,7 @@ int main()
 	{
 		// Insert function here
 		float x = s;
-		float y = sin(x);
+		float y = EvaluateFunction(parsed, x);;
 		float z = 0.0f;
 
 		vertices.push_back(x);
