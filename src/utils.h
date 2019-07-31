@@ -1,6 +1,23 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
+
+enum Operator
+{
+	ADD = 0,
+	SUB = 0,
+	MUL = 1,
+	DIV = 1,
+	POW = 2,
+	SQRT = 2,
+	SIN = 3,
+	COS = 3,
+	LP,	// Left parenthesis
+	RP	// Right parenthesis
+};
+
+std::map<std::string, Operator> OperatorMap;
 
 inline std::vector<std::string> Split(std::string& origin, char delimiter)
 {
@@ -44,22 +61,62 @@ void ParseFunction(std::string& function)
 {
 	// TODO: Add support for non-spaced-out functions
 
+	// Initialize operator map
+	OperatorMap["+"] = ADD;
+	OperatorMap["-"] = SUB;
+	OperatorMap["*"] = MUL;
+	OperatorMap["/"] = DIV;
+	OperatorMap["^"] = POW;
+	OperatorMap["sqrt"] = SQRT;
+	OperatorMap["sin"] = SIN;
+	OperatorMap["cos"] = COS;
+	OperatorMap["("] = LP;
+	OperatorMap[")"] = RP;
+
 	std::vector<std::string> split = Split(function, ' ');
 	
 	std::vector<std::string> output;
 	std::vector<std::string> stack;
 
-	for(auto& c : split)
+	for(size_t i = 0; i < split.size(); i++)
 	{
-		if(IsNumber(c))
-			output.push_back(c);
-		else
-			stack.push_back(c);
+		std::string token = split[i];
+		if(IsNumber(token))
+		{
+			output.push_back(token);
+		} else if(OperatorMap[token] == LP)
+		{
+			stack.push_back(token);
+		} else if(OperatorMap[token] == RP)
+		{
+			while(OperatorMap[stack.back()] != LP)
+			{
+				output.push_back(stack.back());
+				stack.pop_back();
+			}
+
+			if(OperatorMap[stack.back()] == LP)
+			{
+				stack.pop_back();
+			}
+		} else
+		{ 
+			Operator current = OperatorMap[token];
+			if(!stack.empty())
+			while((OperatorMap[stack.back()] > current || (OperatorMap[stack.back()] == current && OperatorMap[stack.back()] != POW)) && OperatorMap[stack.back()] != LP)
+			{
+				output.push_back(stack.back());
+				stack.pop_back();
+			}
+
+			stack.push_back(token);
+		}
 	}
 
-	for(auto& s : stack)
-		printf("%s\n", s.c_str());
-	
-	for(auto& s : output)
-		printf("%s\n", s.c_str());
+	while(!stack.empty())
+	{
+		output.push_back(stack.back());
+		stack.pop_back();
+	}
+
 }

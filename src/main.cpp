@@ -47,28 +47,28 @@ int main()
 
 	// Bounds of the function
 	float a, b;
-	std::cout << "Enter the bounds of the function." << std::endl;
-	std::cout << "Enter a value to start from (a): ";
-	std::cin >> a;
-	std::cout << "Enter a value to end at (b): ";
-	std::cin >> b;
+	printf("Enter the bounds of the function.\n");
+	printf("Enter a value to start from (a): ");
+	scanf("%f", &a);
+	printf("Enter a value to end at (b): ");
+	scanf("%f", &b);
 
 	// Increment size between every 2 points on the curve.
 	// AKA the step size for each x.
 	float incrementSize = 0.0f;
 #ifdef _DEBUG
-	std::cout << "Enter the increment size between any 2 X values: " << std::endl;
-	std::cout << "(0 for default, 0.01) ";
-	std::cin >> incrementSize;
+	printf("Enter the increment size between any 2 X values: \n");
+	printf("(0 for default, 0.01) ");
+	scanf("%f", &incrementSize);
 #endif
 
 	// The number of times the points will be rotated, and
 	// the number of points in each circle at each x value.
 	int numRotations = 0;
 #ifdef _DEBUG
-	std::cout << "Enter the desired number of rotations for each vertex: " << std::endl;
-	std::cout << "(0 for default, 100) ";
-	std::cin >> numRotations;
+	printf("Enter the desired number of rotations for each vertex: \n");
+	printf("(0 for default, 100) ");
+	scanf("%d", &numRotations);
 #endif
 
 	// Default values
@@ -79,21 +79,21 @@ int main()
 
 	// The desired axis of rotation
 	char axis;
-	std::cout << "Enter the desired axis of rotation: " << std::endl;
-	std::cout << "(X, Y or Z) ";
-	std::cin >> axis;
+	printf("Enter the desired axis of rotation:\n");
+	printf("(X, Y or Z) ");
+	scanf(" %c", &axis);
 	if(axis != 'x' && axis != 'X' && axis != 'y' && axis != 'Y' && axis != 'z' && axis != 'Z')
 	{
-		std::cout << "Invalid axis entered!" << std::endl;
+		printf("Invalid axis entered!\n");
 		glfwTerminate();
 		return 0;
 	}
 
 	// The desired intersection axis
 	char intAxis;
-	std::cout << "Enter the desired axis of intersection: " << std::endl;
-	std::cout << "(X, Y or Z) ";
-	std::cin >> intAxis;
+	printf("Enter the desired axis of intersection:\n");
+	printf("(X, Y or Z) ");
+	scanf(" %c", &intAxis);
 	
 	int intAxisNum;
 	if(intAxis == 'x' || intAxis == 'X')
@@ -104,7 +104,7 @@ int main()
 		intAxisNum = 2;
 	else
 	{
-		std::cout << "Invalid axis entered!\n";
+		printf("Invalid axis entered!\n");
 		glfwTerminate();
 		return 0;
 	}
@@ -119,7 +119,7 @@ int main()
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Function rotator", nullptr, nullptr);
 	if(window == nullptr)
 	{
-		std::cout << "Failed to create window!" << std::endl;
+		printf("Failed to create window!\n");
 		glfwTerminate();
 	}
 	glfwMakeContextCurrent(window);
@@ -131,8 +131,8 @@ int main()
 	// GLAD init
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLAD. Please make sure you have updated your graphics drivers." << std::endl;
-		std::cout << "If this error persists after updating, your GPU does not support OpenGL 2.1, which is the minimum requirement." << std::endl;
+		printf("Failed to initialize GLAD. Please make sure you have updated your graphics drivers.\n");
+		printf("If this error persists after updating, your GPU does not support OpenGL 2.1, which is the minimum requirement.\n");
 		return -1;
 	}
 	glViewport(0, 0, WIDTH, HEIGHT);
@@ -388,8 +388,6 @@ int main()
 
 	// Delete the window
 	glfwTerminate();
-
-	std::cin.get();
 	return 0;
 }
 
@@ -464,7 +462,7 @@ std::vector<float> RotateAroundAxis(std::vector<float>& vertices2D, int numRotat
 				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 0.0, 1.0 });
 			} else
 			{
-				std::cout << "Axis " << axis << " is not supported!" << std::endl;
+				printf("Axis %c is not supported!\n", axis);
 			}
 
 			// Rotated vertex

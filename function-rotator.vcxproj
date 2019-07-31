@@ -108,6 +108,7 @@
       <AdditionalIncludeDirectories>C:\dev\projects\function-rotator\thirdparty\glm;C:\dev\projects\function-rotator\thirdparty\glad\include;C:\dev\projects\function-rotator\thirdparty\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\dev\projects\function-rotator\thirdparty\glfw\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -124,6 +125,7 @@
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

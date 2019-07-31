@@ -39,7 +39,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 		int log_length = 0;
 		char message[1024];
 		glGetShaderInfoLog(vertex, 1024, &log_length, message);
-		std::cout << message << std::endl;
+		printf("%s\n", message);
 	}
 
 	// Fragment shader creation
@@ -54,7 +54,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 		int log_length = 0;
 		char message[1024];
 		glGetShaderInfoLog(fragment, 1024, &log_length, message);
-		std::cout << message << std::endl;
+		printf("%s\n", message);
 	}
 
 	// Attribute locations
