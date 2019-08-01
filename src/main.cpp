@@ -42,6 +42,7 @@ int main()
 
 	// Enter and parse the function
 	std::string function;
+	printf("Enter a function: ");
 	std::getline(std::cin, function);
 	std::vector<std::string> parsed = ParseFunction(function);
 
@@ -171,6 +172,11 @@ int main()
 		float x = s;
 		float y = EvaluateFunction(parsed, x);;
 		float z = 0.0f;
+
+		// IF EVALUATING FUNCTIONS DOESN'T WORK FOR YOU, ENTER THE FUNCTION HERE
+		// float x = s;
+		// float y = sin(x);
+		// float z = 0.0f;
 
 		vertices.push_back(x);
 		vertices.push_back(y);
