@@ -4,8 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "utils.h"
-#include "Shader.hpp"
-#include "Mesh.hpp"
+#include "shader.h"
+#include "mesh.h"
 
 // Rotate all points of a mesh around an axis
 std::vector<float> RotateAroundAxis(std::vector<float>& vertices2D, int numRotations, char axis);
