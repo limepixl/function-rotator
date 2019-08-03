@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cmath>
 
 enum Operator
 {
@@ -13,6 +14,8 @@ enum Operator
 	SQRT,
 	SIN,
 	COS,
+	TAN,
+	COT,
 	LP,	// Left parenthesis
 	RP	// Right parenthesis
 };
@@ -71,6 +74,8 @@ std::vector<std::string> ParseFunction(std::string& function)
 	OperatorMap["sqrt"] = SQRT;
 	OperatorMap["sin"] = SIN;
 	OperatorMap["cos"] = COS;
+	OperatorMap["tan"] = TAN;
+	OperatorMap["cot"] = COT;
 	OperatorMap["("] = LP;
 	OperatorMap[")"] = RP;
 
@@ -81,6 +86,8 @@ std::vector<std::string> ParseFunction(std::string& function)
 	Precedence[DIV] = 1;
 	Precedence[SIN] = 2;
 	Precedence[COS] = 2;
+	Precedence[TAN] = 2;
+	Precedence[COT] = 2;
 	Precedence[POW] = 3;
 	Precedence[SQRT] = 3;
 	Precedence[LP] = 4;
@@ -126,7 +133,7 @@ std::vector<std::string> ParseFunction(std::string& function)
 
 				while((topP == 2 ||		// There is a function at the top 
 					  topP > currentP ||
-					  topP == currentP && top != POW) &&
+					  (topP == currentP && top != POW)) &&
 					  top != LP)
 				{ 
 					output.push_back(stack.back());
@@ -213,6 +220,16 @@ float EvaluateFunction(std::vector<std::string>& function, float x)
 			case COS:
 				d = cos(atof(temp2.c_str()));
 				final.push_back(temp1);	// Return the unused operand
+				final.emplace_back(std::to_string(d));
+				break;
+			case TAN:
+				d = tan(atof(temp2.c_str()));
+				final.push_back(temp1); // Return the unused operand
+				final.emplace_back(std::to_string(d));
+				break;
+			case COT:
+				d = 1.0 / tan(atof(temp2.c_str()));
+				final.push_back(temp1); // Return the unused operand
 				final.emplace_back(std::to_string(d));
 				break;
 			default:

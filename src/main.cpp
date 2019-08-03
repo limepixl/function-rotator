@@ -253,12 +253,13 @@ int main()
 	size_t rotationsPerVertex = static_cast<size_t>(3) * numRotations;
 	for(size_t i = 0; i < vertices3D.size() - rotationsPerVertex; i += 3)
 	{
-		// The first of 2 triangles in each face
-		// C
-		// |\
-		// | \
-		// |  \
-		// A---B
+		/* The first of 2 triangles in each face
+		   C
+		   |\
+		   | \
+		   |  \
+		   A---B
+		*/
 
 		glm::vec3 A{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
 		glm::vec3 B{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };

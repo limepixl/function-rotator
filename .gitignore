@@ -11,3 +11,5 @@
 *.wasm
 .vscode
 *.pyc
+function-rotator-debug.exe
+function-rotator.exe
