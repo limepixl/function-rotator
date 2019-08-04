@@ -33,6 +33,7 @@ static bool wireframe = true;	// Whether to show the mesh as a wireframe mesh
 static float fov = 45.0f;		// Field of view for projection matrix
 static bool show3D = false;		// Whether to show the 3D view or not
 static bool rotate = true;		// Whether to rotate the object
+static int intAxisNum = 1;
 
 int main()
 {
@@ -84,26 +85,6 @@ int main()
 	printf("(X, Y or Z) ");
 	scanf(" %c", &axis);
 	if(axis != 'x' && axis != 'X' && axis != 'y' && axis != 'Y' && axis != 'z' && axis != 'Z')
-	{
-		printf("Invalid axis entered!\n");
-		glfwTerminate();
-		return 0;
-	}
-
-	// The desired intersection axis
-	char intAxis;
-	printf("Enter the desired axis of intersection:\n");
-	printf("(X, Y or Z) ");
-	scanf(" %c", &intAxis);
-	
-	int intAxisNum;
-	if(intAxis == 'x' || intAxis == 'X')
-		intAxisNum = 0;
-	else if(intAxis == 'y' || intAxis == 'Y')
-		intAxisNum = 1;
-	else if(intAxis == 'z' || intAxis == 'Z')
-		intAxisNum = 2;
-	else
 	{
 		printf("Invalid axis entered!\n");
 		glfwTerminate();
@@ -186,43 +167,37 @@ int main()
 
 	// Plane for intersection visualization
 	float planeCoord = 2.0f;
-	std::vector<float> verticesPlane;
+	std::vector<float> yzPlaneVertices
+	{
+		0.0f, -1.0f, -1.0f,
+		0.0f, -1.0f, 1.0f,
+		0.0f, 1.0f, 1.0f,
+		0.0f, 1.0f, 1.0f,
+		0.0f, 1.0f, -1.0f,
+		0.0f, -1.0f, -1.0f
+	};
 
-	if(intAxisNum == 0) // X
+	std::vector<float> xzPlaneVertices
 	{
-		verticesPlane =
-		{
-			0.0f, -1.0f, -1.0f,
-			0.0f, -1.0f, 1.0f,
-			0.0f, 1.0f, 1.0f,
-			0.0f, 1.0f, 1.0f,
-			0.0f, 1.0f, -1.0f,
-			0.0f, -1.0f, -1.0f
-		};
-	} else if(intAxisNum == 1) // Y
+		-1.0f, 0.0f, -1.0f,
+		1.0f, 0.0f, -1.0f,
+		1.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 1.0f,
+		-1.0f, 0.0f, 1.0f,
+		-1.0f, 0.0f, -1.0f
+	};
+	std::vector<float> xyPlaneVertices
 	{
-		verticesPlane =
-		{
-			-1.0f, 0.0f, -1.0f,
-			1.0f, 0.0f, -1.0f,
-			1.0f, 0.0f, 1.0f,
-			1.0f, 0.0f, 1.0f,
-			-1.0f, 0.0f, 1.0f,
-			-1.0f, 0.0f, -1.0f
-		};
-	} else if(intAxisNum == 2) // Z
-	{
-		verticesPlane =
-		{
-			-1.0f, -1.0f, 0.0f,
-			1.0f, -1.0f, 0.0f,
-			1.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 0.0f,
-			-1.0f, 1.0f, 0.0f,
-			-1.0f, -1.0f, 0.0f
-		};
-	}
-	Mesh plane(verticesPlane);
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f
+	};
+	Mesh xyplane(xyPlaneVertices);
+	Mesh xzplane(xzPlaneVertices);
+	Mesh yzplane(yzPlaneVertices);
 
 	// Generate rotated vertices along the circle
 	// defined by the function's value as the radius.
@@ -359,7 +334,12 @@ int main()
 
 		// Draw the plane
 		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
-		plane.drawNonIndexed();
+		if(intAxisNum == 0)
+			yzplane.drawNonIndexed();
+		else if(intAxisNum == 1)
+			xzplane.drawNonIndexed();
+		else if(intAxisNum == 2)
+			xyplane.drawNonIndexed();
 
 		// Reset position of model
 		model = temp;
@@ -420,6 +400,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			wireframe = true;
 		}
+	}
+
+	if(key == GLFW_KEY_A && action == GLFW_PRESS)
+	{
+		// Change axis
+		intAxisNum++;
+		if(intAxisNum >= 3) intAxisNum = 0;
 	}
 }
 
