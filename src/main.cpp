@@ -1,20 +1,10 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "utils.h"
 #include "shader.h"
 #include "mesh.h"
-
-// Rotate all points of a mesh around an axis
-std::vector<float> RotateAroundAxis(std::vector<float>& vertices2D, int numRotations, char axis);
-
-// Map a value from one range to another
-inline float Map(float oldmin, float oldmax, float newmin, float newmax, float current)
-{
-	return newmin + (newmax - newmin) * ((current - oldmin) / (oldmax - oldmin));
-}
 
 // Process mouse input
 void processMouse(GLFWwindow* window, double& xpos);
@@ -145,26 +135,6 @@ int main()
 	Mesh yAxis(yAxisV);
 	Mesh zAxis(zAxisV);
 
-	// Generate the function's curve as plotted on a 2D xy plane
-	std::vector<float> vertices;
-	for(float s = a; s <= b; s += incrementSize)
-	{
-		// Insert function here
-		float x = s;
-		float y = EvaluateFunction(parsed, x);;
-		float z = 0.0f;
-
-		// IF EVALUATING FUNCTIONS DOESN'T WORK FOR YOU, ENTER THE FUNCTION HERE
-		// float x = s;
-		// float y = sin(x);
-		// float z = 0.0f;
-
-		vertices.push_back(x);
-		vertices.push_back(y);
-		vertices.push_back(z);
-	}
-	Mesh curve(vertices);
-
 	// Plane for intersection visualization
 	float planeCoord = 2.0f;
 	std::vector<float> yzPlaneVertices
@@ -199,60 +169,28 @@ int main()
 	Mesh xzplane(xzPlaneVertices);
 	Mesh yzplane(yzPlaneVertices);
 
-	// Generate rotated vertices along the circle
-	// defined by the function's value as the radius.
-	std::vector<float> vertices3D = RotateAroundAxis(vertices, numRotations, axis);
-
-	// This is the number of actual vertices - the number of rotations
-	// for each vertex. It's basically the number of faces.
-	size_t numIterations = vertices3D.size() / 3 - numRotations - 1;
-
-	// Store indices
-	std::vector<unsigned int> indices;
-	for(unsigned int i = 0; i < numIterations; i++)
+	// Generate the function's curve as plotted on a 2D xy plane
+	std::vector<float> vertices;
+	for(float s = a; s <= b; s += incrementSize)
 	{
-		// ...
-		// 3 2 7 6 ...
-		// 0 1 4 5 ...
+		// Insert function here
+		float x = s;
+		float y = EvaluateFunction(parsed, x);;
+		float z = 0.0f;
 
-		indices.push_back(i);
-		indices.push_back(i + 1);
-		indices.push_back(i + numRotations + 1);
-		indices.push_back(i + numRotations + 1);
-		indices.push_back(i + numRotations);
-		indices.push_back(i);
+		// IF EVALUATING FUNCTIONS DOESN'T WORK FOR YOU, ENTER THE FUNCTION HERE
+		// float x = s;
+		// float y = sin(x);
+		// float z = 0.0f;
+
+		vertices.push_back(x);
+		vertices.push_back(y);
+		vertices.push_back(z);
 	}
+	Mesh curve(vertices);
 
-	// Calculate normal vectors
-	std::vector<float> normals;
-	size_t rotationsPerVertex = static_cast<size_t>(3) * numRotations;
-	for(size_t i = 0; i < vertices3D.size() - rotationsPerVertex; i += 3)
-	{
-		/* The first of 2 triangles in each face
-		   C
-		   |\
-		   | \
-		   |  \
-		   A---B
-		*/
-
-		glm::vec3 A{ vertices3D[i], vertices3D[i + 1], vertices3D[i + 2] };
-		glm::vec3 B{ vertices3D[i + 3], vertices3D[i + 4], vertices3D[i + 5] };
-		glm::vec3 C{ vertices3D[i + rotationsPerVertex], vertices3D[i + 1 + rotationsPerVertex], vertices3D[i + 2 + rotationsPerVertex] };
-
-		// For the triangle ABC
-		glm::vec3 u = B - A;
-		glm::vec3 v = C - A;
-
-		// The cross product is the vector that 
-		// has a direction normal to the uv plane.
-		glm::vec3 normal = glm::cross(u, v);
-
-		normals.push_back(normal.x);
-		normals.push_back(normal.y);
-		normals.push_back(normal.z);
-	}
-	Mesh shape(vertices3D, indices, normals);
+	// Create the rotated 3D mesh
+	Mesh shape = CreateRotatedMesh(vertices, numRotations, axis);
 
 	Shader shader("./res/shaders/vertex.glsl", "./res/shaders/fragment.glsl");	// Used for function 2D and 3D mesh drawing
 	Shader defaultShader("./res/shaders/vDefault.glsl", "./res/shaders/fDefault.glsl");	// Used for axes mesh drawing
@@ -423,52 +361,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-}
-
-std::vector<float> RotateAroundAxis(std::vector<float>& vertices2D, int numRotations, char axis)
-{
-	// Increment size to rotate by (in degrees),
-	// to reach 360 degrees with the number of
-	// set iterations.
-	float mul = 360.0f / numRotations;
-
-	std::vector<float> vertices3D;
-	for(size_t i = 0; i < vertices2D.size(); i += 3)
-	{
-		glm::vec3 current(vertices2D[i], vertices2D[i + 1], vertices2D[i + 2]);
-
-		// Complete a full circle 
-		for(int j = 0; j < numRotations; j++)
-		{
-			glm::mat4 rotator(1.0);
-
-			if(axis == 'x' || axis == 'X')
-			{
-				// Rotate along the X axis
-				rotator = glm::rotate(rotator, glm::radians(mul * j), { 1.0, 0.0, 0.0 });
-			} else if(axis == 'y' || axis == 'Y')
-			{
-				// Rotate along the Y axis
-				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 1.0, 0.0 });
-			} else if(axis == 'z' || axis == 'Z')
-			{
-				// Rotate along the Z axis
-				rotator = glm::rotate(rotator, glm::radians(mul * j), { 0.0, 0.0, 1.0 });
-			} else
-			{
-				printf("Axis %c is not supported!\n", axis);
-			}
-
-			// Rotated vertex
-			glm::vec4 rotatedCurrent = rotator * glm::vec4(current, 1.0);
-
-			vertices3D.push_back(rotatedCurrent.x);
-			vertices3D.push_back(rotatedCurrent.y);
-			vertices3D.push_back(rotatedCurrent.z);
-		}
-	}
-
-	return vertices3D;
 }
 
 void processMouse(GLFWwindow* window, double& xpos)
