@@ -203,15 +203,15 @@ int main()
 		processMouse(window, xpos);
 
 		// Setup full color shader
-		defaultShader.useProgram();
+		defaultShader.UseProgram();
 
 		// Perspective projection matrix creation
 		glm::mat4 projection = glm::perspective(glm::radians(fov), static_cast<float>(WIDTH) / HEIGHT, 0.1f, 50.0f);
-		defaultShader.setMat4(projection, "projection");
+		defaultShader.SetMat4(projection, "projection");
 
 		// Model matrix creation
 		glm::mat4 model(1.0);
-		defaultShader.setMat4(model, "model");
+		defaultShader.SetMat4(model, "model");
 
 		// Angle to rotate view matrix by, normalized
 		float nAngle = Map(0.0f, WIDTH, -180.0f, 180.0f, static_cast<float>(xpos));
@@ -221,26 +221,26 @@ int main()
 		view = glm::translate(view, { 0.0f, -0.25f, -10.0f });	// Move the camera above and away from the mesh
 		view = glm::rotate(view, glm::radians(20.0f), { 1.0f, 0.0f, 0.0f }); // Tilt the camera downwards
 		view = glm::rotate(view, glm::radians(nAngle), { 0.0, 1.0, 0.0 }); // Adjust position based on mouse
-		defaultShader.setMat4(view, "view");	// Pass the rotated view matrix to the shaders
+		defaultShader.SetMat4(view, "view");	// Pass the rotated view matrix to the shaders
 
 		// If automatic rotation is enabled
 		if(rotate)
 		{
 			view = glm::rotate(view, glm::radians(25.0f * static_cast<float>(glfwGetTime())), { 0.0, 1.0, 0.0 });
-			defaultShader.setMat4(view, "view");
+			defaultShader.SetMat4(view, "view");
 		}
 
 		// Draw the xAxis
-		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
-		xAxis.drawNonIndexed();
+		defaultShader.SetVec3(1.0f, 0.0f, 0.0f, "col");
+		xAxis.DrawNonIndexed();
 
 		// Draw the yAxis
-		defaultShader.setVec3(0.0f, 0.0f, 1.0f, "col");
-		yAxis.drawNonIndexed();
+		defaultShader.SetVec3(0.0f, 0.0f, 1.0f, "col");
+		yAxis.DrawNonIndexed();
 
 		// Draw the zAxis
-		defaultShader.setVec3(0.0f, 1.0f, 0.0f, "col");
-		zAxis.drawNonIndexed();
+		defaultShader.SetVec3(0.0f, 1.0f, 0.0f, "col");
+		zAxis.DrawNonIndexed();
 
 		// Process plane position
 		if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
@@ -257,51 +257,48 @@ int main()
 				planeCoord = Map(WIDTH, 0.0f, -10.0f, 10.0f, (float)x);
 		}
 
-		glm::mat4 temp = model;
+		// Switch to mesh shader
+		shader.UseProgram();
+		shader.SetInt(intAxisNum, "plane");
+		shader.SetFloat(planeCoord, "planeCoord");
+
+		// Set all uniforms for mesh
+		if(lighting)
+		{
+			shader.SetVec3(1.0f, 1.0f, 1.0f, "col");
+			shader.SetVec3(0.0f, 50.0f, 0.0f, "lightPos");
+		} else
+		{
+			shader.SetVec3(0.2f, 0.2f, 0.2f, "col");
+			shader.SetVec3(0.0f, -500.0f, 0.0f, "lightPos");
+		}
+		shader.SetMat4(model, "model");
+		shader.SetMat4(view, "view");
+		shader.SetMat4(projection, "projection");
+
+		if(show3D)	// Draw the 3D mesh
+			shape.Draw();
+		else		// Draw the 2D curve
+			curve.DrawNonIndexed();
+
+		// Set the correct position for the intersection plane
+		defaultShader.UseProgram();
 		if(intAxisNum == 0)
 			model = glm::translate(model, glm::vec3(planeCoord, 0.0f, 0.0f));
 		else if(intAxisNum == 1)
 			model = glm::translate(model, glm::vec3(0.0f, planeCoord, 0.0f));
 		else if(intAxisNum == 2)
 			model = glm::translate(model, glm::vec3(0.0f, 0.0f, planeCoord));
-		defaultShader.setMat4(model, "model");
+		defaultShader.SetMat4(model, "model");
 
 		// Draw the plane
-		defaultShader.setVec3(1.0f, 0.0f, 0.0f, "col");
+		defaultShader.SetVec3(1.0f, 0.0f, 0.0f, "col");
 		if(intAxisNum == 0)
-			yzplane.drawNonIndexed();
+			yzplane.DrawNonIndexed();
 		else if(intAxisNum == 1)
-			xzplane.drawNonIndexed();
+			xzplane.DrawNonIndexed();
 		else if(intAxisNum == 2)
-			xyplane.drawNonIndexed();
-
-		// Reset position of model
-		model = temp;
-		defaultShader.setMat4(model, "model"); 
-
-		// Switch to mesh shader
-		shader.useProgram();
-		shader.setInt(intAxisNum, "plane");
-		shader.setFloat(planeCoord, "planeCoord");
-
-		// Set all uniforms for mesh
-		if(lighting)
-		{
-			shader.setVec3(1.0f, 1.0f, 1.0f, "col");
-			shader.setVec3(0.0f, 50.0f, 0.0f, "lightPos");
-		} else
-		{
-			shader.setVec3(0.2f, 0.2f, 0.2f, "col");
-			shader.setVec3(0.0f, -500.0f, 0.0f, "lightPos");
-		}
-		shader.setMat4(model, "model");
-		shader.setMat4(view, "view");
-		shader.setMat4(projection, "projection");
-
-		if(show3D)	// Draw the 3D mesh
-			shape.draw();
-		else		// Draw the 2D curve
-			curve.drawNonIndexed();
+			xyplane.DrawNonIndexed();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

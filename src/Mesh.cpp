@@ -54,7 +54,7 @@ Mesh::Mesh(const std::vector<float>& vertexPositions)
 	glBindVertexArray(0);
 }
 
-void Mesh::draw()
+void Mesh::Draw()
 {
 	// Bind
 	glBindVertexArray(VAO);
@@ -67,7 +67,7 @@ void Mesh::draw()
 	glBindVertexArray(0);	
 }
 
-void Mesh::drawNonIndexed()
+void Mesh::DrawNonIndexed()
 {
 	// Bind
 	glBindVertexArray(VAO);

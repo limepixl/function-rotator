@@ -17,6 +17,6 @@ struct Mesh
 
 	Mesh(const std::vector<float>& vertexPositions);
 
-	void draw();
-	void drawNonIndexed();
+	void Draw();
+	void DrawNonIndexed();
 };

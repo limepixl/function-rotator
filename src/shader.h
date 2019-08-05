@@ -7,11 +7,11 @@ struct Shader
 
 	Shader(const char* vertexPath, const char* fragmentPath);
 
-	void useProgram();
-	void stopUsingProgram();
+	void UseProgram();
+	void StopUsingProgram();
 
-	void setInt(int value, const char* location);
-	void setFloat(float value, const char* location);
-	void setMat4(const glm::mat4& value, const char* location);
-	void setVec3(float x, float y, float z, const char* location);
+	void SetInt(int value, const char* location);
+	void SetFloat(float value, const char* location);
+	void SetMat4(const glm::mat4& value, const char* location);
+	void SetVec3(float x, float y, float z, const char* location);
 };

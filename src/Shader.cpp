@@ -74,35 +74,35 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	glDeleteShader(fragment);
 }
 
-void Shader::useProgram()
+void Shader::UseProgram()
 {
 	 glUseProgram(ID);
 }
 
-void Shader::stopUsingProgram()
+void Shader::StopUsingProgram()
 {
 	glUseProgram(0);
 }
 
-void Shader::setInt(int value, const char* location)
+void Shader::SetInt(int value, const char* location)
 {
 	int loc = glGetUniformLocation(ID, location);
 	glUniform1i(loc, value);
 }
 
-void Shader::setFloat(float value, const char* location)
+void Shader::SetFloat(float value, const char* location)
 {
 	int loc = glGetUniformLocation(ID, location);
 	glUniform1f(loc, value);
 }
 
-void Shader::setMat4(const glm::mat4& value, const char* location)
+void Shader::SetMat4(const glm::mat4& value, const char* location)
 {
 	int loc = glGetUniformLocation(ID, location);
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Shader::setVec3(float x, float y, float z, const char* location)
+void Shader::SetVec3(float x, float y, float z, const char* location)
 {
 	int loc = glGetUniformLocation(ID, location);
 	glUniform3f(loc, x, y, z);
