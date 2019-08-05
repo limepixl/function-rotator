@@ -4,8 +4,6 @@
 struct Mesh
 {
 	int vertexCount;
-	bool hasIndices;
-	bool hasNormals;
 
 	unsigned int VAO;	// Vertex Array Object
 	unsigned int VBO;	// Positions buffer
@@ -14,11 +12,11 @@ struct Mesh
 	Mesh() = default;
 
 	Mesh(const std::vector<float>& vertexPositions,
-		 const std::vector<unsigned int>& indices = std::vector<unsigned int>(),
-		 const std::vector<float>& normals = std::vector<float>());
+		 const std::vector<unsigned int>& indices,
+		 const std::vector<float>& normals);
 
-	~Mesh();
+	Mesh(const std::vector<float>& vertexPositions);
 
 	void draw();
-	void drawNonIndexed(bool triFan = false);
+	void drawNonIndexed();
 };
