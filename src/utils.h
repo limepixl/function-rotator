@@ -41,7 +41,9 @@ inline std::vector<std::string> Split(std::string& origin, char delimiter)
 				i++;
 			}
 			i++;
-			origin.insert(origin.begin() + i, ' ');
+
+			if(origin.begin()+i != origin.end())
+				origin.insert(origin.begin() + i, ' ');
 		}
 	}
 
