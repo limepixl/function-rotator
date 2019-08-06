@@ -29,6 +29,22 @@ std::map<Operator, int> Precedence;
 // Split a string into tokens
 inline std::vector<std::string> Split(std::string& origin, char delimiter)
 {
+	// Insert spaces between operators and operands
+	for(size_t i = 0; i < origin.size(); i++)
+	{	
+		char& current = origin[i];
+		if(current == '(' || current == ')' || current == '+' || current == '-' || current == '*' || current == '/' || current == '^')
+		{
+			if(i != 0 && origin[i-1] != ' ')
+			{
+				origin.insert(origin.begin() + i, ' ');
+				i++;
+			}
+			i++;
+			origin.insert(origin.begin() + i, ' ');
+		}
+	}
+
 	std::vector<std::string> result;
 	for(size_t i = 0; i < origin.size(); i++)
 	{
@@ -201,7 +217,7 @@ float EvaluateFunction(std::vector<std::string>& function, float x)
 			switch(OperatorMap[current])
 			{
 			case ADD:
-				d = atof(temp1.c_str()) + atoi(temp2.c_str());
+				d = atof(temp1.c_str()) + atof(temp2.c_str());
 				final.emplace_back(std::to_string(d));
 				break;
 			case SUB:
