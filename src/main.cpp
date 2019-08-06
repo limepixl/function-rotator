@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "shader.h"
 #include "mesh.h"
+#include "function.h"
 
 // Process mouse input
 void processMouse(GLFWwindow* window, double& xpos);
@@ -171,18 +172,7 @@ int main()
 
 	// Generate the function's curve as plotted on a 2D xy plane
 	std::vector<float> vertices;
-	for(float s = a; s <= b; s += incrementSize)
-	{
-		// Insert function here
-		float x = s;
-		float y = EvaluateFunction(parsed, x);;
-		float z = 0.0f;
-		
-
-		vertices.push_back(x);
-		vertices.push_back(y);
-		vertices.push_back(z);
-	}
+	MathFunction(vertices, parsed, a, b, incrementSize);
 	Mesh curve(vertices);
 
 	// Create the rotated 3D mesh
