@@ -1,2 +1,16 @@
 src/glad.c linguist-vendored
 *.h eol=crlf
+*.cpp eol=crlf
+*.glsl eol=crlf
+*.c eol=crlf
+*.cmake eol=crlf
+*.pc eol=crlf
+*.hpp eol=crlf
+*.txt eol=crlf
+*.dat eol=crlf
+*.natvis eol=crlf
+*.inl eol=crlf
+*.gitignore eol=crlf
+*.py eol=crlf
+*.md eol=crlf
+*.gitattributes eol=crlf
