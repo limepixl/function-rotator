@@ -4,8 +4,8 @@
 #include <map>
 #include <cmath>
 #include "mesh.h"
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 enum Operator
 {
