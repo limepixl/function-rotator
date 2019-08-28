@@ -7,5 +7,6 @@ file(GLOB SRC "*.h" "src/*.cpp" "thirdparty/glad/src/glad.c")
 include_directories(thirdparty/glad/include thirdparty/glm)
 find_package(glfw3 REQUIRED)
 
+add_compile_definitions(QTCREATOR)
 add_executable(${PROJECT_NAME} ${SRC})
 target_link_libraries(${PROJECT_NAME} glfw dl)

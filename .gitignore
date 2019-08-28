@@ -13,3 +13,5 @@
 *.pyc
 function-rotator-debug.exe
 function-rotator.exe
+Debug
+Release

@@ -178,9 +178,13 @@ int main()
 	// Create the rotated 3D mesh
 	Mesh shape = CreateRotatedMesh(vertices, numRotations, axis);
 
-	Shader shader("./res/shaders/vertex.glsl", "./res/shaders/fragment.glsl");	// Used for function 2D and 3D mesh drawing
-	Shader defaultShader("./res/shaders/vDefault.glsl", "./res/shaders/fDefault.glsl");	// Used for axes mesh drawing
-
+#ifdef QTCREATOR
+    Shader shader("../res/shaders/vertex.glsl", "../res/shaders/fragment.glsl");	// Used for function 2D and 3D mesh drawing
+    Shader defaultShader("../res/shaders/vDefault.glsl", "../res/shaders/fDefault.glsl");	// Used for axes mesh drawing
+#else
+    Shader shader("./res/shaders/vertex.glsl", "./res/shaders/fragment.glsl");	// Used for function 2D and 3D mesh drawing
+    Shader defaultShader("./res/shaders/vDefault.glsl", "./res/shaders/fDefault.glsl");	// Used for axes mesh drawing
+#endif
 	// Variable used for model matrix rotation
 	double xpos = 0.0;
 
