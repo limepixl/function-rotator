@@ -1,1 +1,1 @@
-g++ src/main.cpp -std=c++11 -Wall -g3 src/Mesh.cpp src/Shader.cpp thirdparty/glad/src/glad.c -I thirdparty/glad/include -I /usr/include/GLFW -I /usr/include/glm -L /usr/lib -lglfw -ldl -o function-rotator
+g++ src/main.cpp -std=c++11 -Wall -g3 -D_DEBUG src/Mesh.cpp src/Shader.cpp thirdparty/glad/src/glad.c -I thirdparty/glad/include -I /usr/include/GLFW -I /usr/include/glm -L /usr/lib -lglfw -ldl -o function-rotator
